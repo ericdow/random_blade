@@ -23,7 +23,7 @@ random_blade:	$(OBJS) random_blade.o
 	$(LD) -o $@ $(LDFLAGS) random_blade.o $(OBJS) $(LIBS)
 
 clean:
-	$(RM) $(EXEC) $(OBJS) ramdom_blad.o mesh_var.mod random_blade
+	$(RM) $(EXEC) $(OBJS) random_blade.o mesh_var.mod random_blade
 
 .SUFFIXES:
 .SUFFIXES: .o .F .c .f .swp
