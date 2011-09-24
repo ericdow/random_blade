@@ -84,6 +84,16 @@ C     WRITE THE TIP CLEARANCE O-MESH COORDINATES
       CALL CG_COORD_WRITE_F(I_FILE, M_BASE, T_ZONE, RealDouble,
      .     'CoordinateZ', ZTMOD, I_COORD, IER)
 
+C     WRITE THE TIP CLEARANCE H-MESH COORDINATES
+      CALL CG_COORD_WRITE_F(I_FILE, M_BASE, H_ZONE, RealDouble,
+     .     'CoordinateX', XHMOD, I_COORD, IER)
+
+      CALL CG_COORD_WRITE_F(I_FILE, M_BASE, H_ZONE, RealDouble,
+     .     'CoordinateY', YHMOD, I_COORD, IER)
+
+      CALL CG_COORD_WRITE_F(I_FILE, M_BASE, H_ZONE, RealDouble,
+     .     'CoordinateZ', ZHMOD, I_COORD, IER)
+
       RETURN
 
       END

@@ -263,7 +263,7 @@ C
          END DO
       END IF
 C
-C     FIND AND STORE THE TIP CLEARANCE MESH
+C     FIND AND STORE THE TIP CLEARANCE O-MESH
 C
       DO T_ZONE = 1,N_ZONE
 
@@ -309,18 +309,115 @@ C
 
       IF ((TSIZE(3,1).NE.OSIZE(CDIR,1))
      .      .OR.(T_ZONE.EQ.O_ZONE)) THEN
-          PRINT *, 'TIP CLEARANCE MESH NOT FOUND'
+          PRINT *, 'TIP CLEARANCE O-MESH NOT FOUND'
           STOP
       END IF
+C
+C     FIND AND STORE THE TIP CLEARANCE H-MESH
+C
+      DO H_ZONE = 1,N_ZONE
+
+          CALL CG_ZONE_READ_F(I_FILE, M_BASE, H_ZONE,
+     .                        ZONENAME, HSIZE, IER)
+C
+C         CHECK THE COORDINATES
+C
+          CALL CG_NCOORDS_F(I_FILE, M_BASE, H_ZONE, N_COORD, IER)
+C
+C         ALLOCATE SPACE
+C
+          ALLOCATE(XH(TSIZE(1,1), HSIZE(2,1), HSIZE(3,1)))
+          ALLOCATE(YH(TSIZE(1,1), HSIZE(2,1), HSIZE(3,1)))
+          ALLOCATE(ZH(TSIZE(1,1), HSIZE(2,1), HSIZE(3,1)))
+          IRMIN(1:3) = 1
+          IRMAX(1:3) = HSIZE(1:3,1)
+C
+C         READ THE COORDINATES
+C
+          CALL CG_COORD_INFO_F(I_FILE, M_BASE, H_ZONE, 1,
+     .                         DATATYPE, COORDNAME, IER)
+
+          CALL CG_COORD_READ_F(I_FILE, M_BASE, H_ZONE, COORDNAME,
+     .         DATATYPE, IRMIN, IRMAX, XH, IER)
+
+          CALL CG_COORD_INFO_F(I_FILE, M_BASE, H_ZONE, 2,
+     .                         DATATYPE, COORDNAME, IER)
+
+          CALL CG_COORD_READ_F(I_FILE, M_BASE, H_ZONE, COORDNAME,
+     .         DATATYPE, IRMIN, IRMAX, YH, IER)
+
+          CALL CG_COORD_INFO_F(I_FILE, M_BASE, H_ZONE, 3,
+     .                         DATATYPE, COORDNAME, IER)
+
+          CALL CG_COORD_READ_F(I_FILE, M_BASE, H_ZONE, COORDNAME,
+     .         DATATYPE, IRMIN, IRMAX, ZH, IER)
+
+          IF ((HSIZE(1,1)==TSIZE(1,1)).AND.(HSIZE(2,1)==(TSIZE(2,1)))
+     .      .AND.(H_ZONE.NE.T_ZONE)) EXIT
+          
+      END DO
+
+      IF ((HSIZE(1,1).NE.TSIZE(1,1)).OR.(HSIZE(2,1).NE.(TSIZE(2,1)))
+     .      .OR.(H_ZONE.EQ.T_ZONE)) THEN
+          PRINT *, 'TIP CLEARANCE H-MESH NOT FOUND'
+          STOP
+      END IF
+C
+C     MATCH UP THE TIP CLEARANCE H-MESH AND O-MESH
+C
+      ALLOCATE(HOL(HSIZE(CDIR,1),2)) 
+      ALLOCATE(HOW(HSIZE(FDIR,1),2))
+      DO I=1,HSIZE(CDIR,1)
+      DO J=1,TSIZE(CDIR,1)
+         C(SDIR) = 1
+         C(FDIR) = 1
+         C(CDIR) = I
+         D(SDIR) = 1
+         D(FDIR) = 1
+         D(CDIR) = J
+         DX = XH(C(1),C(2),C(3)) - XT(D(1),D(2),D(3))
+         DY = YH(C(1),C(2),C(3)) - YT(D(1),D(2),D(3))
+         DZ = ZH(C(1),C(2),C(3)) - ZT(D(1),D(2),D(3))
+         IF ((DX**2+DY**2+DZ**2).LE.1.0e-9) HOL(I,1) = J
+         C(SDIR) = 1
+         C(FDIR) = HSIZE(FDIR,1)
+         C(CDIR) = I
+         DX = XH(C(1),C(2),C(3)) - XT(D(1),D(2),D(3))
+         DY = YH(C(1),C(2),C(3)) - YT(D(1),D(2),D(3))
+         DZ = ZH(C(1),C(2),C(3)) - ZT(D(1),D(2),D(3))
+         IF ((DX**2+DY**2+DZ**2).LE.1.0e-9) HOL(I,2) = J
+      END DO
+      END DO
+      DO I=1,HSIZE(FDIR,1)
+      DO J=1,TSIZE(CDIR,1)
+         C(SDIR) = 1
+         C(FDIR) = I
+         C(CDIR) = 1
+         D(SDIR) = 1
+         D(FDIR) = 1
+         D(CDIR) = J
+         DX = XH(C(1),C(2),C(3)) - XT(D(1),D(2),D(3))
+         DY = YH(C(1),C(2),C(3)) - YT(D(1),D(2),D(3))
+         DZ = ZH(C(1),C(2),C(3)) - ZT(D(1),D(2),D(3))
+         IF ((DX**2+DY**2+DZ**2).LE.1.0e-9) HOW(I,1) = J
+         C(SDIR) = 1
+         C(FDIR) = I
+         C(CDIR) = HSIZE(CDIR,1)
+         DX = XH(C(1),C(2),C(3)) - XT(D(1),D(2),D(3))
+         DY = YH(C(1),C(2),C(3)) - YT(D(1),D(2),D(3))
+         DZ = ZH(C(1),C(2),C(3)) - ZT(D(1),D(2),D(3))
+         IF ((DX**2+DY**2+DZ**2).LE.1.0e-9) HOW(I,2) = J
+      END DO
+      END DO
 C
 C     WRITE OUT BLADE SURFACE
 C
       OPEN(UNIT=304,FILE='blade_surf.dat')
       WRITE(304,'(A,I10)') 'CDIM:', OSIZE(CDIR,1) 
-      WRITE(304,'(A,I10)') 'SDIM:', OSIZE(SDIR,1)-TSIZE(SDIR,1)+1 
+      WRITE(304,'(A,I10)') 'SDIM:', OSIZE(SDIR,1) 
 
       DO I=1,OSIZE(CDIR,1)
-      DO J=1,OSIZE(SDIR,1)-TSIZE(SDIR,1)+1
+      DO J=1,OSIZE(SDIR,1)
          C(FDIR) = 1
          C(CDIR) = I
          C(SDIR) = J

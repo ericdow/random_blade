@@ -1,5 +1,6 @@
 import read_blade
 import simulate
+from math import *
 from numpy import *
 import pylab
 from mpl_toolkits.mplot3d import Axes3D
@@ -26,16 +27,57 @@ Ks = int(ns/5.)          # mode cutoff
 Kt = int(nt/5.)
 M = 1
 N = 1
+##########
+# SINE
 fc = 0.0005*sc[-1]*outer(sin(2*pi*M*sc/sc[-1]),sin(2*pi*N*tc/tc[-1]))
+##########
+##########
+# ANGLE
+zmid = 0.5*(max(zmc[:,0]) + min(zmc[:,0]))
+chord = sqrt((max(zmc[:,0])-min(zmc[:,0]))**2 + (max(zmc[:,0])-min(zmc[:,0]))**2)
+# fc = 0.005*chord*(2.0*(zmc-min(zmc[:,0]))/(max(zmc[:,0])-min(zmc[:,0]))-1.0)
+fc = 0.01*chord*(1.0 - zmc/max(zmc[:,0]))
+dx1 = xmc[0,0]-xmc[-1,0]
+dy1 = ymc[0,0]-ymc[-1,0]
+dz1 = zmc[0,0]-zmc[-1,0]
+##########
+##########
+# TWIST WITH TIP FIXED
+chord = sqrt((max(zmc[:,0])-min(zmc[:,0]))**2 + (max(zmc[:,0])-min(zmc[:,0]))**2)
+fc = -0.01*chord*(1.0 - zmc/max(zmc[:,0]))
+for i in range(ns):
+    rh = sqrt(xmc[i,0]**2 + ymc[i,0]**2)
+    rt = sqrt(xmc[i,-1]**2 + ymc[i,-1]**2) - 0.00356
+    for j in range(nt):
+        r = sqrt(xmc[i,j]**2 + ymc[i,j]**2)
+        fc[i,j] *= 1.0 - (r-rh)/(rt-rh)
+dx1 = xmc[0,0]-xmc[-1,0]
+dy1 = ymc[0,0]-ymc[-1,0]
+dz1 = zmc[0,0]-zmc[-1,0]
+##########
 
 tg, sg = meshgrid(tc,sc)
                      
 nc = read_blade.calcNormals(xmc,ymc,zmc)
 
+pl = -1
+pylab.figure()
+pylab.plot(zmc[:,pl],ymc[:,pl],'b*-')
+pylab.plot(z[:,pl],y[:,pl])
+
 xmc = xmc + nc[:,:,0]*fc
 ymc = ymc + nc[:,:,1]*fc
 zmc = zmc + nc[:,:,2]*fc
+
+pylab.plot(zmc[:,pl],ymc[:,pl],'r*-')
  
+dx2 = xmc[0,0]-xmc[-1,0]
+dy2 = ymc[0,0]-ymc[-1,0]
+dz2 = zmc[0,0]-zmc[-1,0]
+
+dth = acos(1./sqrt(dx1**2+dy1**2+dz1**2)/sqrt(dx2**2+dy2**2+dz2**2)*(dx1*dx2+dy1*dy2+dz1*dz2))*180/pi
+print dth
+
 xu = xmc + dx
 yu = ymc + dy
 zu = zmc + dz
@@ -48,7 +90,10 @@ xp = vstack((xu[:-1,:],xl[::-1,:]))
 yp = vstack((yu[:-1,:],yl[::-1,:]))
 zp = vstack((zu[:-1,:],zl[::-1,:]))
 
+pylab.plot(zp[:,pl],yp[:,pl])
+
 # normal random process
+'''
 sp,tp = read_blade.xyz2st(xp,yp,zp)
 ns = xp.shape[0]
 nt = xp.shape[1]
@@ -60,36 +105,12 @@ M = 2
 N = 1
 fp = 0.05*sp[-1]*outer(sin(2*pi*M*sp/sp[-1]),cos(2*pi*N*tp/tp[-1]))
 
-######
-# MAY BE EASIER TO JUST INTERPOLATE THE K-L EIGENFUNCTIONS
-# IN 1D AND RECONSTRUCT FROM THAT
-######
-'''
-# interpolate back to original mesh
-ss = linspace(0,sp[-1]-sp[0],ns)
-tt = linspace(0,tp[-1]-tp[0],nt)
-ff = simulate.randProcessPeriodic(ss, tt, ns, nt, Ks, Kt)
-fp = simulate.interp(ss, tt, ff, sp, tp)
-
-tg, sg = meshgrid(tt,ss)
-pylab.contourf(sg,tg,ff,30)
-pylab.contourf(sg+sg[-1],tg,ff,30)
-pylab.colorbar()
-pylab.axes().set_aspect('equal', 'datalim')
-pylab.figure()
-tg, sg = meshgrid(tp,sp)
-pylab.contourf(sg,tg,fp,30)
-pylab.contourf(sg+sg[-1],tg,fp,30)
-pylab.colorbar()
-pylab.axes().set_aspect('equal', 'datalim')
-pylab.show()
-'''
-
 np = read_blade.calcNormals(xp,yp,zp)
 
 xp = xp + np[:,:,0]*fp
 yp = yp + np[:,:,1]*fp
 zp = zp + np[:,:,2]*fp
+'''
 
 # write out the blade surface
 f = open(wpath,'w')
@@ -101,15 +122,6 @@ for i in arange(cdim):
         f.write('\n')
 
 f.close()
-
-# write out the normal perturbation
-g = open('normal_field.dat','w')
-for i in arange(cdim):
-    for j in arange(sdim):
-        g.write('%20.8E' * 4 % (x[i,j],y[i,j],z[i,j],fp[i,j]))
-        g.write('\n')
-
-g.close()
 
 '''
 fig = pylab.figure()
@@ -134,3 +146,4 @@ pylab.show()
 '''
 
 
+pylab.show()
