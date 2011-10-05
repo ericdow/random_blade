@@ -84,6 +84,7 @@ def xyz2st(x,y,z):
 def calcNormals(x, y, z):
     nr = x.shape[0]-1
     nc = x.shape[1]-1
+    # face areas
     areas = zeros((nr,nc))
     v1 = zeros((nr,nc,3))
     v1[:,:,0] = x[1:,:-1] - x[:-1,:-1]
@@ -107,6 +108,7 @@ def calcNormals(x, y, z):
     areas = column_stack((areas[:,0],areas,areas[:,-1]))
     areas = row_stack((areas[0,:],areas,areas[-1,:]))
 
+    # face normals - construct with face diagonals
     v1[:,:,0] = x[1:,1:] - x[:-1,:-1]
     v1[:,:,1] = y[1:,1:] - y[:-1,:-1]
     v1[:,:,2] = z[1:,1:] - z[:-1,:-1]
@@ -125,12 +127,15 @@ def calcNormals(x, y, z):
 
     n = zeros((nr+1,nc+1,3))
     n[:,:,0] = 0.25*(nfx[:-1,:-1]*areas[:-1,:-1] + nfx[1:,1:]*areas[1:,1:] + 
-                     nfx[:-1,1:]*areas[:-1,1:] + nfx[:-1,1:]*areas[:-1,1:])
+                     nfx[:-1,1:]*areas[:-1,1:] + nfx[1:,:-1]*areas[1:,:-1])
     n[:,:,1] = 0.25*(nfy[:-1,:-1]*areas[:-1,:-1] + nfy[1:,1:]*areas[1:,1:] + 
-                     nfy[:-1,1:]*areas[:-1,1:] + nfy[:-1,1:]*areas[:-1,1:])
+                     nfy[:-1,1:]*areas[:-1,1:] + nfy[1:,:-1]*areas[1:,:-1])
     n[:,:,2] = 0.25*(nfz[:-1,:-1]*areas[:-1,:-1] + nfz[1:,1:]*areas[1:,1:] + 
-                     nfz[:-1,1:]*areas[:-1,1:] + nfz[:-1,1:]*areas[:-1,1:])
+                     nfz[:-1,1:]*areas[:-1,1:] + nfz[1:,:-1]*areas[1:,:-1])
 
     n = n/sqrt(n[:,:,0]**2 + n[:,:,1]**2 + n[:,:,2]**2).reshape(nr+1,nc+1,1).repeat(3,2)
+
+    # make sure periodicity is correct
+    n[-1,:,:] = n[0,:,:]
 
     return n

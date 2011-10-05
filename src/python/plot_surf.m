@@ -3,29 +3,33 @@ clear all; close all; clc;
 cdim = 153;
 sdim = 81;
 
-[bs] = load('/home/ericdow/code/random_blade/input/blade_surf_copy.dat');
-% [bsm] = load('blade_surf_mod.dat');
+[bs] = load('blade_surf.dat');
+[bsm] = load('blade_surf_mod.dat');
 
 x = bs(:,1);
 y = bs(:,2);
 z = bs(:,3);
 
-% xm = bsm(:,1);
-% ym = bsm(:,2);
-% zm = bsm(:,3);
+xm = bsm(:,1);
+ym = bsm(:,2);
+zm = bsm(:,3);
 
 x = reshape(x,sdim,cdim);
 y = reshape(y,sdim,cdim);
 z = reshape(z,sdim,cdim);
 
-% xm = reshape(xm,sdim,cdim);
-% ym = reshape(ym,sdim,cdim);
-% zm = reshape(zm,sdim,cdim);
+xm = reshape(xm,sdim,cdim);
+ym = reshape(ym,sdim,cdim);
+zm = reshape(zm,sdim,cdim);
 
 % d = sqrt((xm-x).^2 + (ym-y).^2 + (zm-z).^2);
 
 % surf(x,y,z,'edgecolor','none')
 % colorbar
+
+surf(xm, ym, zm)
+
+return
 
 f = load('normal_field.dat');
 x = f(:,1);

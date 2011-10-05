@@ -13,7 +13,11 @@ def mufun(x):    # expectation function
     return f
 
 def covfun(x):    # covariance function
-    lam, sig = 1.0, sqrt(1.0e-3)
+    lam, sig = 2.0, sqrt(20e-3)
+    return (sig**2) * exp(-x**2/(2*lam**2))
+
+def covfun2(x):    # covariance function
+    lam, sig = 2.0, sqrt(20e-3)
     return (sig**2) * exp(-x**2/(2*lam**2))
 
 def cov(x, covF): 
@@ -108,7 +112,7 @@ def randProcessPeriodic(x, y, nx, ny, KX, KY):
         UX[:,i] = u(x)
     
     muY = mu(yl, mufun)
-    CY  = cov(yl, covfun)
+    CY  = cov(yl, covfun2)
     UY, SY = eigenPairs(CY, yl[0], yl[-1])
     # interpolate from uniform to original grid
     for i in arange(KY):

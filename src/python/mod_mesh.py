@@ -20,23 +20,23 @@ os.chdir(inp)
 
 # convert CGNS files to HDF format
 os.system('adf2hdf ' + cg_mesh_orig)
-os.system('adf2hdf ' + cg_soln_orig)
+# os.system('adf2hdf ' + cg_soln_orig)
 
 # copy CGNS files
 shutil.copy(cg_mesh_orig, cg_mesh_mod)
-shutil.copy(cg_soln_orig, cg_soln_mod)
+# shutil.copy(cg_soln_orig, cg_soln_mod)
 
 # write mesh surface out
 os.system(src+'random_blade '+cg_mesh_orig)
-os.system(src+'random_blade '+cg_soln_orig)
+# os.system(src+'random_blade '+cg_soln_orig)
 
 # perturb the mesh surface
-perturb_surf.perturb(rpath, wpath)
+perturb_surf.perturb(inp+rpath, inp+wpath)
 
 # read in perturbation to CGNS mesh
 os.system(src+'random_blade '+cg_mesh_orig+' '+cg_mesh_mod)
-os.system(src+'random_blade '+cg_soln_orig+' '+cg_soln_mod)
+# os.system(src+'random_blade '+cg_soln_orig+' '+cg_soln_mod)
 
 # convert CGNS files back to ADF format
 os.system('hdf2adf ' + cg_mesh_mod)
-os.system('hdf2adf ' + cg_soln_mod)
+# os.system('hdf2adf ' + cg_soln_mod)

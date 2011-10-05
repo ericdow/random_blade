@@ -7,10 +7,16 @@ from matplotlib import cm
 
 def perturb(rpath, wpath):
 
+    '''
+    inp = '/home/ericdow/code/random_blade/input/'
+    rpath = inp+'blade_surf.dat'
+    wpath = inp+'blade_surf_mod.dat'
+    '''
+
     cdim, sdim, x, y, z = read_blade.read_coords(rpath)
     
     # scale coordinates to be in cm
-    scale = 100.0
+    scale = 1.0
     x *= scale
     y *= scale
     z *= scale
@@ -29,8 +35,6 @@ def perturb(rpath, wpath):
     ns = xmc.shape[0]
     nt = xmc.shape[1]
     # mode cutoff
-    Ks = int(ns/5.)          
-    Kt = int(nt/5.)
     Ks = ns
     Kt = nt
     fc = simulate.randProcess(sc, tc, ns, nt, Ks, Kt)
@@ -54,16 +58,16 @@ def perturb(rpath, wpath):
     xp = vstack((xu[:-1,:],xl[::-1,:]))
     yp = vstack((yu[:-1,:],yl[::-1,:]))
     zp = vstack((zu[:-1,:],zl[::-1,:]))
-    
+ 
     # normal random process
     sp,tp = read_blade.xyz2st(xp,yp,zp)
     ns = xp.shape[0]
     nt = xp.shape[1]
-    Ks = int(ns/10.)
-    Kt = int(nt/10.)
     Ks = ns
     Kt = nt
     fp = simulate.randProcessPeriodic(sp, tp, ns, nt, Ks, Kt)
+    fp[0,:] = fp[-1,:]
+    # fp = zeros(fp.shape)
     
     '''
     # interpolate back to original mesh
@@ -81,9 +85,12 @@ def perturb(rpath, wpath):
     '''
     tg, sg = meshgrid(tp,sp)
     pylab.contourf(sg,tg,fp,30)
-    pylab.contourf(sg+sg[-1],tg,fp,30)
+    # pylab.contourf(sg+sg[-1],tg,fp,30)
     pylab.colorbar()
+    pylab.xlim(0.0,sp[-1])
     pylab.axes().set_aspect('equal', 'datalim')
+    pylab.xlabel('x')
+    pylab.ylabel('y')
     pylab.show()
     
     np = read_blade.calcNormals(xp,yp,zp)
@@ -141,5 +148,5 @@ def perturb(rpath, wpath):
                            linewidth=0, antialised=0, shade=False)
     pylab.show()
     '''
-    
+       
 
