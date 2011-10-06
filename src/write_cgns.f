@@ -1,7 +1,7 @@
 C
 C     ******************************************************************
 C
-      SUBROUTINE WRITE_CGNS (FNAME_OUT)
+      SUBROUTINE WRITE_CGNS (FNAME_OUT, PREC)
 C
 C     ******************************************************************
 C     *                                                                *
@@ -22,7 +22,7 @@ C
 C     ******************************************************************
 C
       INTEGER   :: IER, I_FILE, I_BASE, I_ZONE, I_COORD, I_FLOW, I_FIELD
-      INTEGER   :: I, J, K, C(3), D(3)
+      INTEGER   :: I, J, K, C(3), D(3), PREC
       REAL(8), POINTER :: XC(:,:,:), YC(:,:,:), ZC(:,:,:)
 
       CHARACTER :: FNAME_OUT*32
@@ -63,36 +63,127 @@ C
          END DO
          END DO
       END IF
-
+C
 C     WRITE THE O-MESH COORDINATES
-      CALL CG_COORD_WRITE_F(I_FILE, M_BASE, O_ZONE, RealDouble,
-     .     'CoordinateX', XMOD, I_COORD, IER)
+C
+      IF (PREC == 0) THEN
 
-      CALL CG_COORD_WRITE_F(I_FILE, M_BASE, O_ZONE, RealDouble,
-     .     'CoordinateY', YMOD, I_COORD, IER)
+         IF (ALLOCATED(XS)) DEALLOCATE(XS,YS,ZS)
+         ALLOCATE(XS(OSIZE(1,1), OSIZE(2,1), OSIZE(3,1)))
+         ALLOCATE(YS(OSIZE(1,1), OSIZE(2,1), OSIZE(3,1)))
+         ALLOCATE(ZS(OSIZE(1,1), OSIZE(2,1), OSIZE(3,1)))
+         DO I = 1,OSIZE(1,1)
+         DO J = 1,OSIZE(2,1)
+         DO K = 1,OSIZE(3,1)
+            XS(I,J,K) = REAL(XMOD(I,J,K))
+            YS(I,J,K) = REAL(YMOD(I,J,K))
+            ZS(I,J,K) = REAL(ZMOD(I,J,K))
+         END DO
+         END DO
+         END DO
 
-      CALL CG_COORD_WRITE_F(I_FILE, M_BASE, O_ZONE, RealDouble,
-     .     'CoordinateZ', ZMOD, I_COORD, IER)
+         CALL CG_COORD_WRITE_F(I_FILE, M_BASE, O_ZONE, DATATYPE,
+     .        'CoordinateX', XS, I_COORD, IER)
 
+         CALL CG_COORD_WRITE_F(I_FILE, M_BASE, O_ZONE, DATATYPE,
+     .        'CoordinateY', YS, I_COORD, IER)
+
+         CALL CG_COORD_WRITE_F(I_FILE, M_BASE, O_ZONE, DATATYPE,
+     .        'CoordinateZ', ZS, I_COORD, IER)
+
+
+      ELSE
+
+         CALL CG_COORD_WRITE_F(I_FILE, M_BASE, O_ZONE, DATATYPE,
+     .        'CoordinateX', XMOD, I_COORD, IER)
+
+         CALL CG_COORD_WRITE_F(I_FILE, M_BASE, O_ZONE, DATATYPE,
+     .        'CoordinateY', YMOD, I_COORD, IER)
+
+         CALL CG_COORD_WRITE_F(I_FILE, M_BASE, O_ZONE, DATATYPE,
+     .        'CoordinateZ', ZMOD, I_COORD, IER)
+
+      END IF
+C
 C     WRITE THE TIP CLEARANCE O-MESH COORDINATES
-      CALL CG_COORD_WRITE_F(I_FILE, M_BASE, T_ZONE, RealDouble,
-     .     'CoordinateX', XTMOD, I_COORD, IER)
+C
+      IF (PREC == 0) THEN
 
-      CALL CG_COORD_WRITE_F(I_FILE, M_BASE, T_ZONE, RealDouble,
-     .     'CoordinateY', YTMOD, I_COORD, IER)
+         DEALLOCATE(XS,YS,ZS)
+         ALLOCATE(XS(TSIZE(1,1), TSIZE(2,1), TSIZE(3,1)))
+         ALLOCATE(YS(TSIZE(1,1), TSIZE(2,1), TSIZE(3,1)))
+         ALLOCATE(ZS(TSIZE(1,1), TSIZE(2,1), TSIZE(3,1)))
+         DO I = 1,TSIZE(1,1)
+         DO J = 1,TSIZE(2,1)
+         DO K = 1,TSIZE(3,1)
+            XS(I,J,K) = REAL(XTMOD(I,J,K))
+            YS(I,J,K) = REAL(YTMOD(I,J,K))
+            ZS(I,J,K) = REAL(ZTMOD(I,J,K))
+         END DO
+         END DO
+         END DO
 
-      CALL CG_COORD_WRITE_F(I_FILE, M_BASE, T_ZONE, RealDouble,
-     .     'CoordinateZ', ZTMOD, I_COORD, IER)
+         CALL CG_COORD_WRITE_F(I_FILE, M_BASE, T_ZONE, DATATYPE,
+     .        'CoordinateX', XS, I_COORD, IER)
 
+         CALL CG_COORD_WRITE_F(I_FILE, M_BASE, T_ZONE, DATATYPE,
+     .        'CoordinateY', YS, I_COORD, IER)
+
+         CALL CG_COORD_WRITE_F(I_FILE, M_BASE, T_ZONE, DATATYPE,
+     .        'CoordinateZ', ZS, I_COORD, IER)
+
+      ELSE
+
+         CALL CG_COORD_WRITE_F(I_FILE, M_BASE, T_ZONE, DATATYPE,
+     .        'CoordinateX', XTMOD, I_COORD, IER)
+
+         CALL CG_COORD_WRITE_F(I_FILE, M_BASE, T_ZONE, DATATYPE,
+     .        'CoordinateY', YTMOD, I_COORD, IER)
+
+         CALL CG_COORD_WRITE_F(I_FILE, M_BASE, T_ZONE, DATATYPE,
+     .        'CoordinateZ', ZTMOD, I_COORD, IER)
+
+      END IF
+C
 C     WRITE THE TIP CLEARANCE H-MESH COORDINATES
-      CALL CG_COORD_WRITE_F(I_FILE, M_BASE, H_ZONE, RealDouble,
-     .     'CoordinateX', XHMOD, I_COORD, IER)
+C
+      IF (PREC == 0) THEN
 
-      CALL CG_COORD_WRITE_F(I_FILE, M_BASE, H_ZONE, RealDouble,
-     .     'CoordinateY', YHMOD, I_COORD, IER)
+         DEALLOCATE(XS,YS,ZS)
+         ALLOCATE(XS(HSIZE(1,1), HSIZE(2,1), HSIZE(3,1)))
+         ALLOCATE(YS(HSIZE(1,1), HSIZE(2,1), HSIZE(3,1)))
+         ALLOCATE(ZS(HSIZE(1,1), HSIZE(2,1), HSIZE(3,1)))
+         DO I = 1,HSIZE(1,1)
+         DO J = 1,HSIZE(2,1)
+         DO K = 1,HSIZE(3,1)
+            XS(I,J,K) = REAL(XHMOD(I,J,K))
+            YS(I,J,K) = REAL(YHMOD(I,J,K))
+            ZS(I,J,K) = REAL(ZHMOD(I,J,K))
+         END DO
+         END DO
+         END DO
 
-      CALL CG_COORD_WRITE_F(I_FILE, M_BASE, H_ZONE, RealDouble,
-     .     'CoordinateZ', ZHMOD, I_COORD, IER)
+         CALL CG_COORD_WRITE_F(I_FILE, M_BASE, H_ZONE, DATATYPE,
+     .        'CoordinateX', XS, I_COORD, IER)
+
+         CALL CG_COORD_WRITE_F(I_FILE, M_BASE, H_ZONE, DATATYPE,
+     .        'CoordinateY', YS, I_COORD, IER)
+
+         CALL CG_COORD_WRITE_F(I_FILE, M_BASE, H_ZONE, DATATYPE,
+     .        'CoordinateZ', ZS, I_COORD, IER)
+
+      ELSE
+
+         CALL CG_COORD_WRITE_F(I_FILE, M_BASE, H_ZONE, DATATYPE,
+     .        'CoordinateX', XHMOD, I_COORD, IER)
+
+         CALL CG_COORD_WRITE_F(I_FILE, M_BASE, H_ZONE, DATATYPE,
+     .        'CoordinateY', YHMOD, I_COORD, IER)
+
+         CALL CG_COORD_WRITE_F(I_FILE, M_BASE, H_ZONE, DATATYPE,
+     .        'CoordinateZ', ZHMOD, I_COORD, IER)
+
+      END IF
 
       RETURN
 

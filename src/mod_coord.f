@@ -25,10 +25,10 @@ C
       REAL      :: DX, DY, DZ, R, RR, MAG, DENOM, HTIP
       REAL      :: DXI, DYI, DZI, DXO, DYO, DZO
       REAL      :: DXS, DYS, DZS, DXH, DYH, DZH, DXB, DYB, DZB
-      REAL(8), POINTER :: DS(:), S(:), RO(:), RI(:), ZI(:)
-      REAL(8), POINTER :: DS2(:,:), S2(:,:), SJK(:,:), TJK(:,:)
-      REAL(8), POINTER :: XSH(:,:,:), YSH(:,:,:), ZSH(:,:,:)
-      INTEGER, POINTER :: IY(:)
+      REAL(8), DIMENSION(:), ALLOCATABLE     :: DS, S, RO, RI, ZI
+      REAL(8), DIMENSION(:,:), ALLOCATABLE   :: DS2, S2, SJK, TJK
+      REAL(8), DIMENSION(:,:,:), ALLOCATABLE :: XSH, YSH, ZSH
+      INTEGER, DIMENSION(:), ALLOCATABLE     :: IY
       CHARACTER :: STR*32
 
       ALLOCATE(XMOD(OSIZE(1,1), OSIZE(2,1), OSIZE(3,1)))
@@ -799,6 +799,7 @@ C
 C      
 C     INTERPOLATE THE UPPER AND LOWER FACES OF THE H-MESH
 C
+      DEALLOCATE(S,DS)
       ALLOCATE(S(HSIZE(FDIR,1)))
       ALLOCATE(DS(HSIZE(FDIR,1)))
       DO I=2,HSIZE(CDIR,1)-1

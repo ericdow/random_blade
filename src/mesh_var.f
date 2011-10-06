@@ -17,12 +17,13 @@ C
       INTEGER   :: CDIR, FDIR, SDIR
       INTEGER   :: FLIP
 
-      INTEGER, POINTER :: HOL(:,:), HOW(:,:)
-      REAL(8), POINTER :: X(:,:,:), Y(:,:,:), Z(:,:,:)
-      REAL(8), POINTER :: XT(:,:,:), YT(:,:,:), ZT(:,:,:)
-      REAL(8), POINTER :: XH(:,:,:), YH(:,:,:), ZH(:,:,:)
-      REAL(8), POINTER :: XMOD(:,:,:), YMOD(:,:,:), ZMOD(:,:,:)
-      REAL(8), POINTER :: XTMOD(:,:,:), YTMOD(:,:,:), ZTMOD(:,:,:)
-      REAL(8), POINTER :: XHMOD(:,:,:), YHMOD(:,:,:), ZHMOD(:,:,:)
+      INTEGER, DIMENSION(:,:), ALLOCATABLE   :: HOL, HOW
+      REAL(8), DIMENSION(:,:,:), ALLOCATABLE :: X    , Y    , Z    ,
+     .                                          XT   , YT   , ZT   ,
+     .                                          XH   , YH   , ZH   ,
+     .                                          XMOD , YMOD , ZMOD ,
+     .                                          XTMOD, YTMOD, ZTMOD,
+     .                                          XHMOD, YHMOD, ZHMOD
+      REAL(4), DIMENSION(:,:,:), ALLOCATABLE :: XS, YS, ZS
 
       END MODULE MESH_VAR

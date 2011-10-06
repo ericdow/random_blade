@@ -1,7 +1,7 @@
 C
 C     ******************************************************************
 C
-      SUBROUTINE READ_CGNS (FNAME_IN)
+      SUBROUTINE READ_CGNS (FNAME_IN, PREC)
 C
 C     ******************************************************************
 C     *                                                                *
@@ -22,12 +22,13 @@ C
 C     ******************************************************************
 C
       INTEGER   :: IER, I_FILE, I_BASE, I_ZONE, I_COORD, I_FLOW, I_FIELD
-
+      INTEGER   :: PREC
       INTEGER   :: I, J, K, N, IMAX, JMAX, KMAX, LOC
       INTEGER   :: MAXS, C(3), D(3)
-      REAL      :: DX, DY, DZ, S1, S2
-      REAL(8), POINTER :: SOL(:,:,:), DIJK(:,:)
-      REAL(8), POINTER :: XC(:,:,:), YC(:,:,:), ZC(:,:,:)
+      REAL*8    :: DX, DY, DZ, S1, S2
+      REAL(8), POINTER :: SOL(:,:,:)
+      REAL(8), DIMENSION(:,:,:), ALLOCATABLE :: XC, YC, ZC
+      REAL(8), DIMENSION(:,:), ALLOCATABLE   :: DIJK
       CHARACTER :: ZONENAME*32, SOLNNAME*32, BASENAME*32, COORDNAME*32
       CHARACTER :: FIELDNAME*32, FNAME_IN*32, STATE*32, ANAME*32
 C
@@ -46,8 +47,10 @@ C
           CALL CG_BASE_READ_F(I_FILE, I_BASE, BASENAME,
      .                        ICELLDIM, IPHYSDIM, IER)
           M_BASE = I_BASE
+C         SOLUTION FORMAT          
           IF (BASENAME.EQ.'project3d') EXIT
-          IF (BASENAME.EQ.'Base#1') EXIT
+C         GRIDFILE FORMAT          
+          IF (BASENAME.EQ.'Base#1') EXIT          
       END DO
 C
 C     DEFINE THE MESH DIMENSION
@@ -91,6 +94,7 @@ C
 C
 C         ALLOCATE SPACE
 C
+          IF (ALLOCATED(X)) DEALLOCATE(X,Y,Z)
           ALLOCATE(X(ISIZE(1,1), ISIZE(2,1), ISIZE(3,1)))
           ALLOCATE(Y(ISIZE(1,1), ISIZE(2,1), ISIZE(3,1)))
           ALLOCATE(Z(ISIZE(1,1), ISIZE(2,1), ISIZE(3,1)))
@@ -99,23 +103,63 @@ C
 C
 C         READ THE COORDINATES
 C
-          CALL CG_COORD_INFO_F(I_FILE, M_BASE, I_ZONE, 1,
-     .                         DATATYPE, COORDNAME, IER)
+          IF (PREC == 0) THEN
 
-          CALL CG_COORD_READ_F(I_FILE, M_BASE, I_ZONE, COORDNAME,
-     .         DATATYPE, IRMIN, IRMAX, X, IER)
+             IF (ALLOCATED(XS)) DEALLOCATE(XS,YS,ZS)
+             ALLOCATE(XS(ISIZE(1,1), ISIZE(2,1), ISIZE(3,1)))
+             ALLOCATE(YS(ISIZE(1,1), ISIZE(2,1), ISIZE(3,1)))
+             ALLOCATE(ZS(ISIZE(1,1), ISIZE(2,1), ISIZE(3,1)))
 
-          CALL CG_COORD_INFO_F(I_FILE, M_BASE, I_ZONE, 2,
-     .                         DATATYPE, COORDNAME, IER)
+             CALL CG_COORD_INFO_F(I_FILE, M_BASE, I_ZONE, 1,
+     .                            DATATYPE, COORDNAME, IER)
 
-          CALL CG_COORD_READ_F(I_FILE, M_BASE, I_ZONE, COORDNAME,
-     .         DATATYPE, IRMIN, IRMAX, Y, IER)
+             CALL CG_COORD_READ_F(I_FILE, M_BASE, I_ZONE, COORDNAME,
+     .            DATATYPE, IRMIN, IRMAX, XS, IER)
 
-          CALL CG_COORD_INFO_F(I_FILE, M_BASE, I_ZONE, 3,
-     .                         DATATYPE, COORDNAME, IER)
+             CALL CG_COORD_INFO_F(I_FILE, M_BASE, I_ZONE, 2,
+     .                            DATATYPE, COORDNAME, IER)
 
-          CALL CG_COORD_READ_F(I_FILE, M_BASE, I_ZONE, COORDNAME,
-     .         DATATYPE, IRMIN, IRMAX, Z, IER)
+             CALL CG_COORD_READ_F(I_FILE, M_BASE, I_ZONE, COORDNAME,
+     .            DATATYPE, IRMIN, IRMAX, YS, IER)
+
+             CALL CG_COORD_INFO_F(I_FILE, M_BASE, I_ZONE, 3,
+     .                            DATATYPE, COORDNAME, IER)
+
+             CALL CG_COORD_READ_F(I_FILE, M_BASE, I_ZONE, COORDNAME,
+     .            DATATYPE, IRMIN, IRMAX, ZS, IER)
+
+             DO I = 1,ISIZE(1,1)
+             DO J = 1,ISIZE(2,1)
+             DO K = 1,ISIZE(3,1)
+                X(I,J,K) = DBLE(XS(I,J,K))
+                Y(I,J,K) = DBLE(YS(I,J,K))
+                Z(I,J,K) = DBLE(ZS(I,J,K))
+             END DO
+             END DO
+             END DO
+
+          ELSE
+
+             CALL CG_COORD_INFO_F(I_FILE, M_BASE, I_ZONE, 1,
+     .                            DATATYPE, COORDNAME, IER)
+
+             CALL CG_COORD_READ_F(I_FILE, M_BASE, I_ZONE, COORDNAME,
+     .            DATATYPE, IRMIN, IRMAX, X, IER)
+
+             CALL CG_COORD_INFO_F(I_FILE, M_BASE, I_ZONE, 2,
+     .                            DATATYPE, COORDNAME, IER)
+
+             CALL CG_COORD_READ_F(I_FILE, M_BASE, I_ZONE, COORDNAME,
+     .            DATATYPE, IRMIN, IRMAX, Y, IER)
+
+             CALL CG_COORD_INFO_F(I_FILE, M_BASE, I_ZONE, 3,
+     .                            DATATYPE, COORDNAME, IER)
+
+             CALL CG_COORD_READ_F(I_FILE, M_BASE, I_ZONE, COORDNAME,
+     .            DATATYPE, IRMIN, IRMAX, Z, IER)
+
+          END IF
+
 C
 C         ZONE DIMENSIONS
 C
@@ -171,29 +215,69 @@ C
       CALL CG_ZONE_READ_F(I_FILE, M_BASE, O_ZONE,
      .                    ZONENAME, OSIZE, IER)
 
+      IF (ALLOCATED(X)) DEALLOCATE(X,Y,Z)
       ALLOCATE(X(OSIZE(1,1), OSIZE(2,1), OSIZE(3,1)))
       ALLOCATE(Y(OSIZE(1,1), OSIZE(2,1), OSIZE(3,1)))
       ALLOCATE(Z(OSIZE(1,1), OSIZE(2,1), OSIZE(3,1)))
       IRMIN(1:3) = 1
       IRMAX(1:3) = OSIZE(1:3,1)
 
-      CALL CG_COORD_INFO_F(I_FILE, M_BASE, O_ZONE, 1,
-     .                     DATATYPE, COORDNAME, IER)
+      IF (PREC == 0) THEN
 
-      CALL CG_COORD_READ_F(I_FILE, M_BASE, O_ZONE, COORDNAME,
-     .     RealDouble, IRMIN, IRMAX, X, IER)
+         IF (ALLOCATED(XS)) DEALLOCATE(XS,YS,ZS)
+         ALLOCATE(XS(OSIZE(1,1), OSIZE(2,1), OSIZE(3,1)))
+         ALLOCATE(YS(OSIZE(1,1), OSIZE(2,1), OSIZE(3,1)))
+         ALLOCATE(ZS(OSIZE(1,1), OSIZE(2,1), OSIZE(3,1)))
 
-      CALL CG_COORD_INFO_F(I_FILE, M_BASE, O_ZONE, 2,
-     .                     DATATYPE, COORDNAME, IER)
+         CALL CG_COORD_INFO_F(I_FILE, M_BASE, O_ZONE, 1,
+     .                        DATATYPE, COORDNAME, IER)
 
-      CALL CG_COORD_READ_F(I_FILE, M_BASE, O_ZONE, COORDNAME,
-     .     RealDouble, IRMIN, IRMAX, Y, IER)
+         CALL CG_COORD_READ_F(I_FILE, M_BASE, O_ZONE, COORDNAME,
+     .        DATATYPE, IRMIN, IRMAX, XS, IER)
 
-      CALL CG_COORD_INFO_F(I_FILE, M_BASE, O_ZONE, 3,
-     .                     DATATYPE, COORDNAME, IER)
+         CALL CG_COORD_INFO_F(I_FILE, M_BASE, O_ZONE, 2,
+     .                        DATATYPE, COORDNAME, IER)
 
-      CALL CG_COORD_READ_F(I_FILE, M_BASE, O_ZONE, COORDNAME,
-     .     RealDouble, IRMIN, IRMAX, Z, IER)
+         CALL CG_COORD_READ_F(I_FILE, M_BASE, O_ZONE, COORDNAME,
+     .        DATATYPE, IRMIN, IRMAX, YS, IER)
+
+         CALL CG_COORD_INFO_F(I_FILE, M_BASE, O_ZONE, 3,
+     .                        DATATYPE, COORDNAME, IER)
+
+         CALL CG_COORD_READ_F(I_FILE, M_BASE, O_ZONE, COORDNAME,
+     .        DATATYPE, IRMIN, IRMAX, ZS, IER)
+
+         DO I = 1,OSIZE(1,1)
+         DO J = 1,OSIZE(2,1)
+         DO K = 1,OSIZE(3,1)
+            X(I,J,K) = DBLE(XS(I,J,K))
+            Y(I,J,K) = DBLE(YS(I,J,K))
+            Z(I,J,K) = DBLE(ZS(I,J,K))
+         END DO
+         END DO
+         END DO
+
+      ELSE
+
+         CALL CG_COORD_INFO_F(I_FILE, M_BASE, O_ZONE, 1,
+     .                        DATATYPE, COORDNAME, IER)
+
+         CALL CG_COORD_READ_F(I_FILE, M_BASE, O_ZONE, COORDNAME,
+     .        DATATYPE, IRMIN, IRMAX, X, IER)
+
+         CALL CG_COORD_INFO_F(I_FILE, M_BASE, O_ZONE, 2,
+     .                        DATATYPE, COORDNAME, IER)
+
+         CALL CG_COORD_READ_F(I_FILE, M_BASE, O_ZONE, COORDNAME,
+     .        DATATYPE, IRMIN, IRMAX, Y, IER)
+
+         CALL CG_COORD_INFO_F(I_FILE, M_BASE, O_ZONE, 3,
+     .                        DATATYPE, COORDNAME, IER)
+
+         CALL CG_COORD_READ_F(I_FILE, M_BASE, O_ZONE, COORDNAME,
+     .        DATATYPE, IRMIN, IRMAX, Z, IER)
+
+      END IF
 
 C
 C     DETERMINE THE ORIENTATION OF THE O-MESH
@@ -231,6 +315,7 @@ C
       FLIP = 0
       IF (S2 < S1) THEN
          FLIP = 1
+         IF (ALLOCATED(XC)) DEALLOCATE(XC,YC,ZC)
          ALLOCATE(XC(OSIZE(1,1), OSIZE(2,1), OSIZE(3,1)))
          ALLOCATE(YC(OSIZE(1,1), OSIZE(2,1), OSIZE(3,1)))
          ALLOCATE(ZC(OSIZE(1,1), OSIZE(2,1), OSIZE(3,1)))
@@ -276,6 +361,7 @@ C
 C
 C         ALLOCATE SPACE
 C
+          IF (ALLOCATED(XT)) DEALLOCATE(XT,YT,ZT)
           ALLOCATE(XT(TSIZE(1,1), TSIZE(2,1), TSIZE(3,1)))
           ALLOCATE(YT(TSIZE(1,1), TSIZE(2,1), TSIZE(3,1)))
           ALLOCATE(ZT(TSIZE(1,1), TSIZE(2,1), TSIZE(3,1)))
@@ -284,23 +370,62 @@ C
 C
 C         READ THE COORDINATES
 C
-          CALL CG_COORD_INFO_F(I_FILE, M_BASE, T_ZONE, 1,
-     .                         DATATYPE, COORDNAME, IER)
+          IF (PREC == 0) THEN
 
-          CALL CG_COORD_READ_F(I_FILE, M_BASE, T_ZONE, COORDNAME,
-     .         DATATYPE, IRMIN, IRMAX, XT, IER)
+             IF (ALLOCATED(XS)) DEALLOCATE(XS,YS,ZS)
+             ALLOCATE(XS(TSIZE(1,1), TSIZE(2,1), TSIZE(3,1)))
+             ALLOCATE(YS(TSIZE(1,1), TSIZE(2,1), TSIZE(3,1)))
+             ALLOCATE(ZS(TSIZE(1,1), TSIZE(2,1), TSIZE(3,1)))
 
-          CALL CG_COORD_INFO_F(I_FILE, M_BASE, T_ZONE, 2,
-     .                         DATATYPE, COORDNAME, IER)
+             CALL CG_COORD_INFO_F(I_FILE, M_BASE, T_ZONE, 1,
+     .                            DATATYPE, COORDNAME, IER)
 
-          CALL CG_COORD_READ_F(I_FILE, M_BASE, T_ZONE, COORDNAME,
-     .         DATATYPE, IRMIN, IRMAX, YT, IER)
+             CALL CG_COORD_READ_F(I_FILE, M_BASE, T_ZONE, COORDNAME,
+     .            DATATYPE, IRMIN, IRMAX, XS, IER)
 
-          CALL CG_COORD_INFO_F(I_FILE, M_BASE, T_ZONE, 3,
-     .                         DATATYPE, COORDNAME, IER)
+             CALL CG_COORD_INFO_F(I_FILE, M_BASE, T_ZONE, 2,
+     .                            DATATYPE, COORDNAME, IER)
 
-          CALL CG_COORD_READ_F(I_FILE, M_BASE, T_ZONE, COORDNAME,
-     .         DATATYPE, IRMIN, IRMAX, ZT, IER)
+             CALL CG_COORD_READ_F(I_FILE, M_BASE, T_ZONE, COORDNAME,
+     .            DATATYPE, IRMIN, IRMAX, YS, IER)
+
+             CALL CG_COORD_INFO_F(I_FILE, M_BASE, T_ZONE, 3,
+     .                            DATATYPE, COORDNAME, IER)
+
+             CALL CG_COORD_READ_F(I_FILE, M_BASE, T_ZONE, COORDNAME,
+     .            DATATYPE, IRMIN, IRMAX, ZS, IER)
+             
+             DO I = 1,TSIZE(1,1)
+             DO J = 1,TSIZE(2,1)
+             DO K = 1,TSIZE(3,1)
+                XT(I,J,K) = DBLE(XS(I,J,K))
+                YT(I,J,K) = DBLE(YS(I,J,K))
+                ZT(I,J,K) = DBLE(ZS(I,J,K))
+             END DO
+             END DO
+             END DO
+
+          ELSE
+
+             CALL CG_COORD_INFO_F(I_FILE, M_BASE, T_ZONE, 1,
+     .                            DATATYPE, COORDNAME, IER)
+
+             CALL CG_COORD_READ_F(I_FILE, M_BASE, T_ZONE, COORDNAME,
+     .            DATATYPE, IRMIN, IRMAX, XT, IER)
+
+             CALL CG_COORD_INFO_F(I_FILE, M_BASE, T_ZONE, 2,
+     .                            DATATYPE, COORDNAME, IER)
+
+             CALL CG_COORD_READ_F(I_FILE, M_BASE, T_ZONE, COORDNAME,
+     .            DATATYPE, IRMIN, IRMAX, YT, IER)
+
+             CALL CG_COORD_INFO_F(I_FILE, M_BASE, T_ZONE, 3,
+     .                            DATATYPE, COORDNAME, IER)
+
+             CALL CG_COORD_READ_F(I_FILE, M_BASE, T_ZONE, COORDNAME,
+     .            DATATYPE, IRMIN, IRMAX, ZT, IER)
+
+          END IF
 
           IF ((TSIZE(3,1).EQ.OSIZE(CDIR,1))
      .      .AND.(T_ZONE.NE.O_ZONE)) EXIT
@@ -312,6 +437,7 @@ C
           PRINT *, 'TIP CLEARANCE O-MESH NOT FOUND'
           STOP
       END IF
+
 C
 C     FIND AND STORE THE TIP CLEARANCE H-MESH
 C
@@ -326,31 +452,71 @@ C
 C
 C         ALLOCATE SPACE
 C
-          ALLOCATE(XH(TSIZE(1,1), HSIZE(2,1), HSIZE(3,1)))
-          ALLOCATE(YH(TSIZE(1,1), HSIZE(2,1), HSIZE(3,1)))
-          ALLOCATE(ZH(TSIZE(1,1), HSIZE(2,1), HSIZE(3,1)))
+          IF (ALLOCATED(XH)) DEALLOCATE(XH,YH,ZH)
+          ALLOCATE(XH(HSIZE(1,1), HSIZE(2,1), HSIZE(3,1)))
+          ALLOCATE(YH(HSIZE(1,1), HSIZE(2,1), HSIZE(3,1)))
+          ALLOCATE(ZH(HSIZE(1,1), HSIZE(2,1), HSIZE(3,1)))
           IRMIN(1:3) = 1
           IRMAX(1:3) = HSIZE(1:3,1)
 C
 C         READ THE COORDINATES
 C
-          CALL CG_COORD_INFO_F(I_FILE, M_BASE, H_ZONE, 1,
-     .                         DATATYPE, COORDNAME, IER)
+          IF (PREC == 0) THEN
 
-          CALL CG_COORD_READ_F(I_FILE, M_BASE, H_ZONE, COORDNAME,
-     .         DATATYPE, IRMIN, IRMAX, XH, IER)
+             IF (ALLOCATED(XS)) DEALLOCATE(XS,YS,ZS)
+             ALLOCATE(XS(HSIZE(1,1), HSIZE(2,1), HSIZE(3,1)))
+             ALLOCATE(YS(HSIZE(1,1), HSIZE(2,1), HSIZE(3,1)))
+             ALLOCATE(ZS(HSIZE(1,1), HSIZE(2,1), HSIZE(3,1)))
 
-          CALL CG_COORD_INFO_F(I_FILE, M_BASE, H_ZONE, 2,
-     .                         DATATYPE, COORDNAME, IER)
+             CALL CG_COORD_INFO_F(I_FILE, M_BASE, H_ZONE, 1,
+     .                            DATATYPE, COORDNAME, IER)
 
-          CALL CG_COORD_READ_F(I_FILE, M_BASE, H_ZONE, COORDNAME,
-     .         DATATYPE, IRMIN, IRMAX, YH, IER)
+             CALL CG_COORD_READ_F(I_FILE, M_BASE, H_ZONE, COORDNAME,
+     .            DATATYPE, IRMIN, IRMAX, XS, IER)
 
-          CALL CG_COORD_INFO_F(I_FILE, M_BASE, H_ZONE, 3,
-     .                         DATATYPE, COORDNAME, IER)
+             CALL CG_COORD_INFO_F(I_FILE, M_BASE, H_ZONE, 2,
+     .                            DATATYPE, COORDNAME, IER)
 
-          CALL CG_COORD_READ_F(I_FILE, M_BASE, H_ZONE, COORDNAME,
-     .         DATATYPE, IRMIN, IRMAX, ZH, IER)
+             CALL CG_COORD_READ_F(I_FILE, M_BASE, H_ZONE, COORDNAME,
+     .            DATATYPE, IRMIN, IRMAX, YS, IER)
+
+             CALL CG_COORD_INFO_F(I_FILE, M_BASE, H_ZONE, 3,
+     .                            DATATYPE, COORDNAME, IER)
+
+             CALL CG_COORD_READ_F(I_FILE, M_BASE, H_ZONE, COORDNAME,
+     .            DATATYPE, IRMIN, IRMAX, ZS, IER)
+             
+             DO I = 1,HSIZE(1,1)
+             DO J = 1,HSIZE(2,1)
+             DO K = 1,HSIZE(3,1)
+                XH(I,J,K) = DBLE(XS(I,J,K))
+                YH(I,J,K) = DBLE(YS(I,J,K))
+                ZH(I,J,K) = DBLE(ZS(I,J,K))
+             END DO
+             END DO
+             END DO
+
+          ELSE
+
+             CALL CG_COORD_INFO_F(I_FILE, M_BASE, H_ZONE, 1,
+     .                            DATATYPE, COORDNAME, IER)
+
+             CALL CG_COORD_READ_F(I_FILE, M_BASE, H_ZONE, COORDNAME,
+     .            DATATYPE, IRMIN, IRMAX, XH, IER)
+
+             CALL CG_COORD_INFO_F(I_FILE, M_BASE, H_ZONE, 2,
+     .                            DATATYPE, COORDNAME, IER)
+
+             CALL CG_COORD_READ_F(I_FILE, M_BASE, H_ZONE, COORDNAME,
+     .            DATATYPE, IRMIN, IRMAX, YH, IER)
+
+             CALL CG_COORD_INFO_F(I_FILE, M_BASE, H_ZONE, 3,
+     .                            DATATYPE, COORDNAME, IER)
+
+             CALL CG_COORD_READ_F(I_FILE, M_BASE, H_ZONE, COORDNAME,
+     .            DATATYPE, IRMIN, IRMAX, ZH, IER)
+
+          END IF
 
           IF ((HSIZE(1,1)==TSIZE(1,1)).AND.(HSIZE(2,1)==(TSIZE(2,1)))
      .      .AND.(H_ZONE.NE.T_ZONE)) EXIT
@@ -434,6 +600,9 @@ C
 C
 C     ******************************************************************
 C
+C     CLEAN UP
+C
+      DEALLOCATE(DIJK)
 
 5     FORMAT (1X,I3,6X,I3,6X,I3)
 10    FORMAT (I9,I9,I9,I9)

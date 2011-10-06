@@ -19,7 +19,7 @@ C     LOCAL VARIABLES
 C
 C     ******************************************************************
 C
-      INTEGER   :: N
+      INTEGER   :: N, PREC
       CHARACTER :: FNAME_IN*32, FNAME_OUT*32
 C
 C     OBTAIN INPUT AND OUTPUT FILES
@@ -30,8 +30,9 @@ C
           STOP
       END IF
       CALL GETARG(1, FNAME_IN)
-        
-      CALL READ_CGNS(FNAME_IN)
+
+      PREC = 0        
+      CALL READ_CGNS(FNAME_IN, PREC)
       
       IF (N.EQ.2) THEN
         
@@ -39,7 +40,7 @@ C
 
           CALL MOD_COORD
 
-          CALL WRITE_CGNS(FNAME_OUT)
+          CALL WRITE_CGNS(FNAME_OUT, PREC)
 
       END IF
 
