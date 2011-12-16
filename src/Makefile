@@ -17,13 +17,16 @@ FOBJS   = mesh_var.o read_cgns.o write_cgns.o mod_coord.o\
 
 OBJS	= $(FOBJS)
 
-DEFAULT:	random_blade
+DEFAULT:	random_blade setbc
 
 random_blade:	$(OBJS) random_blade.o
 	$(LD) -o $@ $(LDFLAGS) random_blade.o $(OBJS) $(LIBS)
 
+setbc:	$(OBJS) setbc.o
+	$(LD) -o $@ $(LDFLAGS) setbc.o $(OBJS) $(LIBS)
+
 clean:
-	$(RM) $(EXEC) $(OBJS) random_blade.o mesh_var.mod random_blade
+	$(RM) $(EXEC) $(OBJS) random_blade.o mesh_var.mod random_blade setbc
 
 .SUFFIXES:
 .SUFFIXES: .o .F .c .f .swp

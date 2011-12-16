@@ -31,7 +31,7 @@ C
       END IF
       CALL GETARG(1, FNAME_IN)
 
-      PREC = 0        
+      PREC = 0 
       CALL READ_CGNS(FNAME_IN, PREC)
       
       IF (N.EQ.2) THEN
