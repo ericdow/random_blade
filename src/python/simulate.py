@@ -16,12 +16,48 @@ def covfun(x):    # covariance function
     lam, sig = 2.0, sqrt(20e-3)
     return (sig**2) * exp(-x**2/(2*lam**2))
 
+def covfun_span(x,s_params):    # covariance function
+    lam = s_params[0]
+    sig = s_params[1]
+    return (sig**2) * exp(-x**2/(2*lam**2))
+
+def covfun_chord(x1,x2,c_params):    # covariance function
+    # stationary parameters
+    lam = c_params[0]
+    # weighting parameters
+    sig = c_params[1]
+    w = c_params[2]
+    s = c_params[3]
+    xc = c_params[4]
+
+    if x1 < xc - w/2.0:
+        a1 = sig*exp(-(x1-(xc-w/2.0))**2/s**2)
+    elif x1 > xc + w/2.0:
+        a1 = sig*exp(-(x1-(xc+w/2.0))**2/s**2)
+    else:
+        a1 = sig
+
+    if x2 < xc - w/2.0:
+        a2 = sig*exp(-(x2-(xc-w/2.0))**2/s**2)
+    elif x2 > xc + w/2.0:
+        a2 = sig*exp(-(x2-(xc+w/2.0))**2/s**2)
+    else:
+        a2 = sig
+        
+    return a1 * a2 * exp(-(x1-x2)**2/(2*lam**2))
+
 def covfun2(x):    # covariance function
     lam, sig = 2.0, sqrt(20e-3)
     return (sig**2) * exp(-x**2/(2*lam**2))
 
-def cov(x, covF): 
-    covM = array([[covF(a-b) for a in x] for b in x])
+# stationary covariance
+def cov(x, covF, *params): 
+    covM = array([[covF(a-b,*params) for a in x] for b in x])
+    return covM
+
+# nonstationary covariance
+def covNonstat(x, covF, *params): 
+    covM = array([[covF(a,b,*params) for a in x] for b in x])
     return covM
 
 def covPeriodic(x, covF):
@@ -127,6 +163,37 @@ def randProcessPeriodic(x, y, nx, ny, KX, KY):
         for j in arange(KY):
             f += sqrt(SX[i])*sqrt(SY[j])*Z[i,j]*outer(UX[:,i],UY[:,j])
 
+    f += outer(muX,ones((1,ny)))
+    f += outer(muY,ones((1,nx))).T
+    return f
+    
+def randProcessLE(x, y, i_le, nx, ny, KX, KY, c_params, s_params):
+    # x direction is chord
+    # y direction is span
+    # i_le gives the index of the LE coordinate
+    muX = mu(x, mufun)
+    CX  = covNonstat(x, covfun_chord, c_params)
+    UX, SX = eigenPairs(CX, x[0], x[-1])
+
+    # plot the eigenfunctions
+    '''
+    pylab.figure()
+    for i in arange(5):
+        pylab.plot(x,UX[:,i])
+    pylab.show()
+    '''
+    
+    muY = mu(y, mufun)
+    CY  = cov(y, covfun_span, s_params)
+    UY, SY = eigenPairs(CY, y[0], y[-1])
+
+    random.seed() 
+    Z = random.randn(KX,KY)    # normal distribution vector
+    f = zeros((nx,ny))
+    for i in arange(KX):
+        for j in arange(KY):
+            f += sqrt(SX[i])*sqrt(SY[j])*Z[i,j]*outer(UX[:,i],UY[:,j])
+    
     f += outer(muX,ones((1,ny)))
     f += outer(muY,ones((1,nx))).T
     return f
