@@ -7,12 +7,6 @@ from matplotlib import cm
 
 def perturb(rpath, wpath):
 
-    '''
-    inp = '/home/ericdow/code/random_blade/input/'
-    rpath = inp+'blade_surf.dat'
-    wpath = inp+'blade_surf_mod.dat'
-    '''
-
     cdim, sdim, x, y, z = read_blade.read_coords(rpath)
     
     # scale coordinates to be in cm

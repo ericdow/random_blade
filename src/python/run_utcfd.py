@@ -4,7 +4,7 @@ import os, shutil
 
 ut_src = '/mnt/pwfiles/ericdow/utcfd/bin/'
 src = '/home/ericdow/code/random_blade/src/'
-inp = '/home/ericdow/code/random_blade/input/'
+inp = '/home/ericdow/code/random_blade/input/rotor37_coarse/'
 runs = '/home/ericdow/code/random_blade/runs/'
 
 cg_mesh_orig = 'utcfd_out.cgns'
@@ -25,7 +25,7 @@ for i in range(n_mc):
     mod_mesh.modify(src,inp,cg_mesh_orig,cg_mesh_mod,rpath,wpath)
 
     # create directory to run utcfd in
-    rundir = runs+'run'+'%04d' % i)
+    rundir = runs+'run'+'%04d' % i
     os.mkdir(runsdir)
     shutil.move(inp+cg_mesh_mod,rundir+'utcfd_in.cgns')
 
@@ -37,6 +37,6 @@ for i in range(n_mc):
     shutil.copy(runs+'utcfd.bc',rundir)
 
     # run utcfd
-    os.system('mpiexec -np '+str(np)+' 'ut_src+'utcfd.exe'
+    os.system('mpiexec -np '+str(np)+' '+ut_src+'utcfd.exe')
 
     # process results
