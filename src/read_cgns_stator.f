@@ -26,7 +26,7 @@ C
       INTEGER   :: I, J, K, N, IMAX, JMAX, KMAX, LOC
       INTEGER   :: MAXS, C(3), D(3)
       REAL*8    :: DX, DY, DZ, DTH, S1, S2
-      REAL*8    :: XTMP, YTMP, ZTMP, PI
+      REAL*8    :: XTMP, YTMP, ZTMP, RTMP, TH1, TH2, PI
       REAL(8), POINTER :: SOL(:,:,:)
       REAL(8), DIMENSION(:,:,:), ALLOCATABLE :: XC, YC, ZC
       REAL(8), DIMENSION(:,:), ALLOCATABLE   :: DIJK
@@ -205,10 +205,10 @@ C
 C
 C     ALLOCATE SPACE
 C
-      IF (ALLOCATED(XH)) DEALLOCATE(XH,YH,ZH)
-      ALLOCATE(XH(HSIZE(1,1), HSIZE(2,1), HSIZE(3,1)))
-      ALLOCATE(YH(HSIZE(1,1), HSIZE(2,1), HSIZE(3,1)))
-      ALLOCATE(ZH(HSIZE(1,1), HSIZE(2,1), HSIZE(3,1)))
+      IF (ALLOCATED(X)) DEALLOCATE(X,Y,Z)
+      ALLOCATE(X(HSIZE(1,1), HSIZE(2,1), HSIZE(3,1)))
+      ALLOCATE(Y(HSIZE(1,1), HSIZE(2,1), HSIZE(3,1)))
+      ALLOCATE(Z(HSIZE(1,1), HSIZE(2,1), HSIZE(3,1)))
       IRMIN(1:3) = 1
       IRMAX(1:3) = HSIZE(1:3,1)
 C
@@ -237,9 +237,9 @@ C
          DO I = 1,HSIZE(1,1)
          DO J = 1,HSIZE(2,1)
          DO K = 1,HSIZE(3,1)
-            XH(I,J,K) = DBLE(XS(I,J,K))
-            YH(I,J,K) = DBLE(YS(I,J,K))
-            ZH(I,J,K) = DBLE(ZS(I,J,K))
+            X(I,J,K) = DBLE(XS(I,J,K))
+            Y(I,J,K) = DBLE(YS(I,J,K))
+            Z(I,J,K) = DBLE(ZS(I,J,K))
          END DO
          END DO
          END DO
@@ -250,19 +250,19 @@ C
      .                        DATATYPE, COORDNAME, IER)
 
          CALL CG_COORD_READ_F(I_FILE, M_BASE, H_ZONE, COORDNAME,
-     .        DATATYPE, IRMIN, IRMAX, XH, IER)
+     .        DATATYPE, IRMIN, IRMAX, X, IER)
 
          CALL CG_COORD_INFO_F(I_FILE, M_BASE, H_ZONE, 2,
      .                        DATATYPE, COORDNAME, IER)
 
          CALL CG_COORD_READ_F(I_FILE, M_BASE, H_ZONE, COORDNAME,
-     .        DATATYPE, IRMIN, IRMAX, YH, IER)
+     .        DATATYPE, IRMIN, IRMAX, Y, IER)
 
          CALL CG_COORD_INFO_F(I_FILE, M_BASE, H_ZONE, 3,
      .                        DATATYPE, COORDNAME, IER)
 
          CALL CG_COORD_READ_F(I_FILE, M_BASE, H_ZONE, COORDNAME,
-     .        DATATYPE, IRMIN, IRMAX, ZH, IER)
+     .        DATATYPE, IRMIN, IRMAX, Z, IER)
 
       END IF
 C
@@ -289,10 +289,8 @@ C     PRESSURE SIDE
          C(FDIR) = 1
          C(CDIR) = I
          C(SDIR) = J
-         XTMP = ZH(C(1),C(2),C(3))
-         YTMP = XH(C(1),C(2),C(3))*SIN(YH(C(1),C(2),C(3)))
-         ZTMP = XH(C(1),C(2),C(3))*COS(YH(C(1),C(2),C(3)))
-         WRITE(304,'(3E20.8)') XTMP,YTMP,ZTMP
+         WRITE(304,'(3E20.8)') X(C(1),C(2),C(3)),Y(C(1),C(2),C(3)),
+     .                         Z(C(1),C(2),C(3))    
       END DO
       END DO
 
@@ -306,14 +304,17 @@ C        ROTATE SUCTION SIDE FOR 46 BLADES
          D(FDIR) = 1
          D(CDIR) = I
          D(SDIR) = J
-         IF (YH(C(1),C(2),C(3)) > YH(D(1),D(2),D(3))) THEN
-            DTH = -2.0*PI/46.0
+         TH1 = ATAN2(Z(C(1),C(2),C(3)),Y(C(1),C(2),C(3)))
+         TH2 = ATAN2(Z(D(1),D(2),D(3)),Y(D(1),D(2),D(3)))
+         RTMP = SQRT(Y(C(1),C(2),C(3))**2 + Z(C(1),C(2),C(3))**2)
+         IF (TH2 > TH1) THEN
+            DTH = 2.0*PI/46.0
          ELSE
-            DTH = 2.0*PI/46.0 
-         END IF      
-         XTMP = ZH(C(1),C(2),C(3))
-         YTMP = XH(C(1),C(2),C(3))*SIN(YH(C(1),C(2),C(3))+DTH)
-         ZTMP = XH(C(1),C(2),C(3))*COS(YH(C(1),C(2),C(3))+DTH)
+            DTH = -2.0*PI/46.0
+         ENDIF
+         XTMP = X(C(1),C(2),C(3))
+         YTMP = RTMP*COS(TH1+DTH)
+         ZTMP = RTMP*SIN(TH1+DTH) 
          WRITE(304,'(3E20.8)') XTMP,YTMP,ZTMP
       END DO
       END DO

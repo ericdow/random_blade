@@ -31,7 +31,7 @@ C
       END IF
       CALL GETARG(1, FNAME_IN)
 
-      PREC = 1 
+      PREC = 0 
       CALL READ_CGNS_STATOR(FNAME_IN, PREC)
       
       IF (N.EQ.2) THEN

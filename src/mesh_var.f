@@ -16,6 +16,7 @@ C
       INTEGER   :: O_ZONE,OSIZE(3,3),T_ZONE,TSIZE(3,3),H_ZONE,HSIZE(3,3)
       INTEGER   :: CDIR, FDIR, SDIR
       INTEGER   :: FLIP
+      INTEGER   :: LE_IND,TE_IND
 
       INTEGER, DIMENSION(:,:), ALLOCATABLE   :: HOL, HOW
       REAL(8), DIMENSION(:,:,:), ALLOCATABLE :: X    , Y    , Z    ,

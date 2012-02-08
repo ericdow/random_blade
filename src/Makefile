@@ -6,27 +6,31 @@ SWP	= swplist
 RM	= /bin/rm -f
 PROC	= ip27
 OLEVEL	= -O0
-FOPTS   = 
+FOPTS   =  
 FFLAGS	= $(OLEVEL) $(FOPTS) -I/usr/include
 CFLAGS	= $(COPTS)
 LIBS	= 
 LDFLAGS	= -lcgns $(FFLAGS)
 
 FOBJS   = mesh_var.o read_cgns.o write_cgns.o mod_coord.o\
-          sort3.o 
+          sort3.o read_cgns_stator.o write_cgns_stator.o mod_coord_stator.o 
 
 OBJS	= $(FOBJS)
 
-DEFAULT:	random_blade setbc
+DEFAULT:	random_blade random_blade_stator setbc
 
 random_blade:	$(OBJS) random_blade.o
 	$(LD) -o $@ $(LDFLAGS) random_blade.o $(OBJS) $(LIBS)
+
+random_blade_stator:	$(OBJS) random_blade_stator.o
+	$(LD) -o $@ $(LDFLAGS) random_blade_stator.o $(OBJS) $(LIBS)
 
 setbc:	$(OBJS) setbc.o
 	$(LD) -o $@ $(LDFLAGS) setbc.o $(OBJS) $(LIBS)
 
 clean:
-	$(RM) $(EXEC) $(OBJS) random_blade.o mesh_var.mod random_blade setbc
+	$(RM) $(EXEC) $(OBJS) random_blade.o mesh_var.mod random_blade setbc.o setbc\
+                          random_blade_stator.o random_blade_stator
 
 .SUFFIXES:
 .SUFFIXES: .o .F .c .f .swp

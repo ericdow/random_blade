@@ -29,8 +29,9 @@ M = 1
 N = 1
 ##########
 # SINE
-fc = 0.0005*sc[-1]*outer(sin(2*pi*M*sc/sc[-1]),sin(2*pi*N*tc/tc[-1]))
+fc = 0.0010*sc[-1]*outer(sin(2*pi*M*sc/sc[-1]),sin(2*pi*N*tc/tc[-1]))
 ##########
+'''
 ##########
 # ANGLE
 zmid = 0.5*(max(zmc[:,0]) + min(zmc[:,0]))
@@ -41,6 +42,8 @@ dx1 = xmc[0,0]-xmc[-1,0]
 dy1 = ymc[0,0]-ymc[-1,0]
 dz1 = zmc[0,0]-zmc[-1,0]
 ##########
+'''
+'''
 ##########
 # TWIST WITH TIP FIXED
 chord = sqrt((max(zmc[:,0])-min(zmc[:,0]))**2 + (max(zmc[:,0])-min(zmc[:,0]))**2)
@@ -55,28 +58,28 @@ dx1 = xmc[0,0]-xmc[-1,0]
 dy1 = ymc[0,0]-ymc[-1,0]
 dz1 = zmc[0,0]-zmc[-1,0]
 ##########
+'''
 
 tg, sg = meshgrid(tc,sc)
                      
-nc = read_blade.calcNormals(xmc,ymc,zmc)
-
-pl = -1
-pylab.figure()
-pylab.plot(zmc[:,pl],ymc[:,pl],'b*-')
-pylab.plot(z[:,pl],y[:,pl])
+nc = read_blade.calcNormalsCamber(xmc,ymc,zmc)
 
 xmc = xmc + nc[:,:,0]*fc
 ymc = ymc + nc[:,:,1]*fc
 zmc = zmc + nc[:,:,2]*fc
 
-pylab.plot(zmc[:,pl],ymc[:,pl],'r*-')
+# pl = -1
+# pylab.figure()
+# pylab.plot(zmc[:,pl],ymc[:,pl],'b*-')
+# pylab.plot(z[:,pl],y[:,pl])
+# pylab.plot(zmc[:,pl],ymc[:,pl],'r*-')
  
 dx2 = xmc[0,0]-xmc[-1,0]
 dy2 = ymc[0,0]-ymc[-1,0]
 dz2 = zmc[0,0]-zmc[-1,0]
 
-dth = acos(1./sqrt(dx1**2+dy1**2+dz1**2)/sqrt(dx2**2+dy2**2+dz2**2)*(dx1*dx2+dy1*dy2+dz1*dz2))*180/pi
-print dth
+# dth = acos(1./sqrt(dx1**2+dy1**2+dz1**2)/sqrt(dx2**2+dy2**2+dz2**2)*(dx1*dx2+dy1*dy2+dz1*dz2))*180/pi
+# print 'ANGLE CHANGE: ', dth
 
 xu = xmc + dx
 yu = ymc + dy
@@ -90,27 +93,8 @@ xp = vstack((xu[:-1,:],xl[::-1,:]))
 yp = vstack((yu[:-1,:],yl[::-1,:]))
 zp = vstack((zu[:-1,:],zl[::-1,:]))
 
-pylab.plot(zp[:,pl],yp[:,pl])
-
-# normal random process
-'''
-sp,tp = read_blade.xyz2st(xp,yp,zp)
-ns = xp.shape[0]
-nt = xp.shape[1]
-Ks = int(ns/4.)
-Kt = int(nt/4.)
-
-# fp = simulate.randProcessPeriodic(sp, tp, ns, nt, Ks, Kt)
-M = 2
-N = 1
-fp = 0.05*sp[-1]*outer(sin(2*pi*M*sp/sp[-1]),cos(2*pi*N*tp/tp[-1]))
-
-np = read_blade.calcNormals(xp,yp,zp)
-
-xp = xp + np[:,:,0]*fp
-yp = yp + np[:,:,1]*fp
-zp = zp + np[:,:,2]*fp
-'''
+# pylab.plot(zp[:,pl],yp[:,pl])
+# pylab.axis('equal')
 
 # write out the blade surface
 f = open(wpath,'w')
@@ -136,14 +120,9 @@ surf = ax.plot_surface(tg, sg, nf[1:-1,1:-1,2], rstride=1, cstride=1, cmap = cm.
 # fig.colorbar(surf)
 '''
 
-'''
 fig = pylab.figure()
 ax = Axes3D(fig)
-# surf = ax.plot_surface(xp, yp, zp, rstride=1, cstride=1, cmap = cm.jet)
-surf = ax.plot_surface(x, y, z, rstride=1, cstride=1, facecolors=cm.jet(fp),\
-                       linewidth=0, antialised=0, shade=False)
-pylab.show()
-'''
-
-
-pylab.show()
+surf = ax.plot_surface(xp, yp, zp, rstride=1, cstride=1, cmap = cm.jet)
+# surf = ax.plot_surface(x, y, z, rstride=1, cstride=1, facecolors=cm.jet(fp),\
+#                        linewidth=0, antialised=0, shade=False)
+# pylab.show()

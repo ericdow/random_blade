@@ -26,5 +26,6 @@ def modify(src,inp,cg_mesh_orig,cg_mesh_mod,rpath,wpath):
     # read in perturbation to CGNS mesh
     os.system(src+'random_blade '+cg_mesh_orig+' '+cg_mesh_mod)
     
-    # convert CGNS files back to ADF format
+    # convert CGNS file back to ADF format
+    os.system('hdf2adf ' + cg_mesh_orig)
     os.system('hdf2adf ' + cg_mesh_mod)
