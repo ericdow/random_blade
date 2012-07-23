@@ -21,11 +21,11 @@ C     LOCAL VARIABLES
 C
 C     ******************************************************************
 C   
-      INTEGER   :: I, J, K, C(3), D(3), JJ, N
+      INTEGER   :: I, J, K, C(3), D(3), JJ, KK, N
       REAL      :: DX, DY, DZ, R, RR, MAG, DENOM, HTIP
       REAL      :: DXI, DYI, DZI, DXO, DYO, DZO
       REAL      :: DXS, DYS, DZS, DXH, DYH, DZH, DXB, DYB, DZB
-      REAL(8), DIMENSION(:), ALLOCATABLE     :: DS, S, RO, RI, ZI
+      REAL(8), DIMENSION(:), ALLOCATABLE     :: DS, S, RO, RI, XI
       REAL(8), DIMENSION(:,:), ALLOCATABLE   :: DS2, S2, SJK, TJK
       REAL(8), DIMENSION(:,:,:), ALLOCATABLE :: XSH, YSH, ZSH
       INTEGER, DIMENSION(:), ALLOCATABLE     :: IY
@@ -248,7 +248,7 @@ C     PROJECT THE ENDS OF THE MESH ONTO THE HUB/SHROUD
 C
       ALLOCATE(RO(OSIZE(CDIR,1)-1))
       ALLOCATE(RI(OSIZE(CDIR,1)-1))
-      ALLOCATE(ZI(OSIZE(CDIR,1)-1))
+      ALLOCATE(XI(OSIZE(CDIR,1)-1))
       ALLOCATE(IY(OSIZE(CDIR,1)-1))
 C
 C     HUB SURFACE
@@ -258,11 +258,11 @@ C
          C(CDIR) = I
          C(SDIR) = 1
          C(FDIR) = OSIZE(FDIR,1)
-         ZI(I) = Z(C(1),C(2),C(3))
-         RO(I) = SQRT(X(C(1),C(2),C(3))**2 + Y(C(1),C(2),C(3))**2)
+         XI(I) = X(C(1),C(2),C(3))
+         RO(I) = SQRT(Y(C(1),C(2),C(3))**2 + Z(C(1),C(2),C(3))**2)
       END DO
 
-      CALL SSORT(ZI,IY,OSIZE(CDIR,1)-1)
+      CALL SSORT(XI,IY,OSIZE(CDIR,1)-1)
 
       DO I=1,OSIZE(CDIR,1)-1
          RI(I) = RO(IY(I))
@@ -273,16 +273,16 @@ C
          C(CDIR) = I
          C(SDIR) = 1
          C(FDIR) = J
-         R = SQRT(XMOD(C(1),C(2),C(3))**2 + YMOD(C(1),C(2),C(3))**2)
+         R = SQRT(YMOD(C(1),C(2),C(3))**2 + ZMOD(C(1),C(2),C(3))**2)
          DO K = 1,OSIZE(CDIR,1)-1
-            IF (ZMOD(C(1),C(2),C(3)).GE.ZI(K)) THEN
-               RR = RI(K) + (ZMOD(C(1),C(2),C(3)) - ZI(K))*
-     .                      (RI(K-1) - RI(K)) / (ZI(K-1) - ZI(K))
+            IF (XMOD(C(1),C(2),C(3)).GE.XI(K)) THEN
+               RR = RI(K) + (XMOD(C(1),C(2),C(3)) - XI(K))*
+     .                      (RI(K-1) - RI(K)) / (XI(K-1) - XI(K))
                EXIT 
             END IF
          END DO
-         XMOD(C(1),C(2),C(3)) = XMOD(C(1),C(2),C(3))*RR/R
          YMOD(C(1),C(2),C(3)) = YMOD(C(1),C(2),C(3))*RR/R
+         ZMOD(C(1),C(2),C(3)) = ZMOD(C(1),C(2),C(3))*RR/R
       END DO   
       END DO
 C
@@ -293,11 +293,11 @@ C
          C(CDIR) = I
          C(SDIR) = OSIZE(SDIR,1)
          C(FDIR) = OSIZE(FDIR,1)
-         ZI(I) = Z(C(1),C(2),C(3))
-         RO(I) = SQRT(X(C(1),C(2),C(3))**2 + Y(C(1),C(2),C(3))**2)
+         XI(I) = X(C(1),C(2),C(3))
+         RO(I) = SQRT(Y(C(1),C(2),C(3))**2 + Z(C(1),C(2),C(3))**2)
       END DO
 
-      CALL SSORT(ZI,IY,OSIZE(CDIR,1)-1)
+      CALL SSORT(XI,IY,OSIZE(CDIR,1)-1)
 
       DO I=1,OSIZE(CDIR,1)-1
          RI(I) = RO(IY(I))
@@ -308,16 +308,16 @@ C
          C(CDIR) = I
          C(SDIR) = OSIZE(SDIR,1)
          C(FDIR) = J
-         R = SQRT(XMOD(C(1),C(2),C(3))**2 + YMOD(C(1),C(2),C(3))**2)
+         R = SQRT(YMOD(C(1),C(2),C(3))**2 + ZMOD(C(1),C(2),C(3))**2)
          DO K = 1,OSIZE(CDIR,1)-1
-            IF (ZMOD(C(1),C(2),C(3)).GE.ZI(K)) THEN
-               RR = RI(K) + (ZMOD(C(1),C(2),C(3)) - ZI(K))*
-     .                      (RI(K-1) - RI(K)) / (ZI(K-1) - ZI(K))
+            IF (XMOD(C(1),C(2),C(3)).GE.XI(K)) THEN
+               RR = RI(K) + (XMOD(C(1),C(2),C(3)) - XI(K))*
+     .                      (RI(K-1) - RI(K)) / (XI(K-1) - XI(K))
                EXIT 
             END IF
          END DO
-         XMOD(C(1),C(2),C(3)) = XMOD(C(1),C(2),C(3))*RR/R
          YMOD(C(1),C(2),C(3)) = YMOD(C(1),C(2),C(3))*RR/R
+         ZMOD(C(1),C(2),C(3)) = ZMOD(C(1),C(2),C(3))*RR/R
       END DO   
       END DO
 C
@@ -537,7 +537,7 @@ C              MOVE THE INTERIOR POINTS
          END DO
       END DO
 C
-C     MOVE THE TIP CLEARANCE O-MESH
+C     MOVE THE OUTER LAYER TIP CLEARANCE O-MESH TO MATCH BLADE O-MESH
 C
       DO I=1,TSIZE(CDIR,1)
       DO J=1,TSIZE(SDIR,1)
@@ -547,24 +547,198 @@ C
          D(FDIR) = 1
          D(CDIR) = I
          D(SDIR) = OSIZE(SDIR,1)-TSIZE(SDIR,1)+J
-C        MOVE OUTER LAYER
          XTMOD(C(1),C(2),C(3)) = XMOD(D(1),D(2),D(3))
          YTMOD(C(1),C(2),C(3)) = YMOD(D(1),D(2),D(3))
          ZTMOD(C(1),C(2),C(3)) = ZMOD(D(1),D(2),D(3))
-C        MOVE INNER LAYERS
-         DO K=1,TSIZE(FDIR,1)-1
-            D(FDIR) = K
+      END DO
+      END DO
+C
+C     MOVE THE INNER LAYER TIP CLEARANCE O-MESH     
+C
+      DEALLOCATE(S,DS)
+      ALLOCATE(S( 2*TSIZE(FDIR,1) + HSIZE(FDIR,1) - 2))
+      ALLOCATE(DS(2*TSIZE(FDIR,1) + HSIZE(FDIR,1) - 2))
+
+      KK = 2*TSIZE(FDIR,1) + HSIZE(FDIR,1) - 2
+
+      DO I=1,HSIZE(CDIR,1)
+      DO J=1,TSIZE(SDIR,1)
+C        FILL S
+         S(1) = 0.0
+         DS(1) = 0.0
+         DO K=TSIZE(FDIR,1)-1,1,-1
+            C(CDIR) = HOL(I,1)
+            C(SDIR) = J
+            C(FDIR) = K
+            D(CDIR) = HOL(I,1)
+            D(SDIR) = J
+            D(FDIR) = K+1
+            JJ = TSIZE(FDIR,1)-K+1
+            DS(JJ) = SQRT((XT(C(1),C(2),C(3))-XT(D(1),D(2),D(3)))**2 + 
+     .                    (YT(C(1),C(2),C(3))-YT(D(1),D(2),D(3)))**2 +
+     .                    (ZT(C(1),C(2),C(3))-ZT(D(1),D(2),D(3)))**2)
+            S(JJ) = S(JJ-1) + DS(JJ)
+         END DO
+         DO K=2,HSIZE(FDIR,1)-1
+            C(CDIR) = I
+            C(SDIR) = J
+            C(FDIR) = K
             D(CDIR) = I
             D(SDIR) = J
-            XTMOD(D(1),D(2),D(3)) = XT(D(1),D(2),D(3)) 
-     .                      + XTMOD(C(1),C(2),C(3)) - XT(C(1),C(2),C(3))
-            YTMOD(D(1),D(2),D(3)) = YT(D(1),D(2),D(3)) 
-     .                      + YTMOD(C(1),C(2),C(3)) - YT(C(1),C(2),C(3))
-            ZTMOD(D(1),D(2),D(3)) = ZT(D(1),D(2),D(3)) 
-     .                      + ZTMOD(C(1),C(2),C(3)) - ZT(C(1),C(2),C(3))
+            D(FDIR) = K-1
+            JJ = JJ + 1
+            DS(JJ) = SQRT((XH(C(1),C(2),C(3))-XH(D(1),D(2),D(3)))**2 + 
+     .                    (YH(C(1),C(2),C(3))-YH(D(1),D(2),D(3)))**2 +
+     .                    (ZH(C(1),C(2),C(3))-ZH(D(1),D(2),D(3)))**2)
+            S(JJ) = S(JJ-1) + DS(JJ)
+         END DO
+         DO K=1,TSIZE(FDIR,1)
+            C(CDIR) = HOL(I,2)
+            C(SDIR) = J
+            C(FDIR) = K
+            D(CDIR) = HOL(I,2)
+            D(SDIR) = J
+            D(FDIR) = K-1
+            JJ = JJ + 1
+            DS(JJ) = SQRT((XT(C(1),C(2),C(3))-XT(D(1),D(2),D(3)))**2 + 
+     .                    (YT(C(1),C(2),C(3))-YT(D(1),D(2),D(3)))**2 +
+     .                    (ZT(C(1),C(2),C(3))-ZT(D(1),D(2),D(3)))**2)
+            S(JJ) = S(JJ-1) + DS(JJ)
+         END DO
+C        DISPLACEMENT AT S = 0
+         C(CDIR) = HOL(I,1)
+         C(SDIR) = J
+         C(FDIR) = TSIZE(FDIR,1)
+         DXI = XTMOD(C(1),C(2),C(3)) - XT(C(1),C(2),C(3))
+         DYI = YTMOD(C(1),C(2),C(3)) - YT(C(1),C(2),C(3))
+         DZI = ZTMOD(C(1),C(2),C(3)) - ZT(C(1),C(2),C(3))
+C        DISPLACEMENT AT S = 1         
+         C(CDIR) = HOL(I,2)
+         C(SDIR) = J
+         C(FDIR) = TSIZE(FDIR,1)
+         DXO = XTMOD(C(1),C(2),C(3)) - XT(C(1),C(2),C(3))
+         DYO = YTMOD(C(1),C(2),C(3)) - YT(C(1),C(2),C(3))
+         DZO = ZTMOD(C(1),C(2),C(3)) - ZT(C(1),C(2),C(3))
+C        INTERPOLATE DISPLACEMENT
+         IF ((I.GE.2).AND.(I.LE.(HSIZE(CDIR,1)-1))) THEN
+            JJ = TSIZE(FDIR,1)
+            DX = DXI*(S(KK)-S(JJ))/S(KK) + DXO*S(JJ)/S(KK)
+            DY = DYI*(S(KK)-S(JJ))/S(KK) + DYO*S(JJ)/S(KK)
+            DZ = DZI*(S(KK)-S(JJ))/S(KK) + DZO*S(JJ)/S(KK)
+            C(FDIR) = 1
+            C(SDIR) = J
+            C(CDIR) = HOL(I,1) 
+            XTMOD(C(1),C(2),C(3)) = XT(C(1),C(2),C(3)) + DX
+            YTMOD(C(1),C(2),C(3)) = YT(C(1),C(2),C(3)) + DY
+            ZTMOD(C(1),C(2),C(3)) = ZT(C(1),C(2),C(3)) + DZ
+            JJ = TSIZE(FDIR,1) + HSIZE(FDIR,1) - 1
+            DX = DXI*(S(KK)-S(JJ))/S(KK) + DXO*S(JJ)/S(KK)
+            DY = DYI*(S(KK)-S(JJ))/S(KK) + DYO*S(JJ)/S(KK)
+            DZ = DZI*(S(KK)-S(JJ))/S(KK) + DZO*S(JJ)/S(KK)
+            C(FDIR) = 1
+            C(SDIR) = J
+            C(CDIR) = HOL(I,2) 
+            XTMOD(C(1),C(2),C(3)) = XT(C(1),C(2),C(3)) + DX
+            YTMOD(C(1),C(2),C(3)) = YT(C(1),C(2),C(3)) + DY
+            ZTMOD(C(1),C(2),C(3)) = ZT(C(1),C(2),C(3)) + DZ
+         END IF
+         IF (I.EQ.1) THEN
+            DO K=1,HSIZE(FDIR,1) 
+               JJ = TSIZE(FDIR,1)+K-1
+               DX = DXI*(S(KK)-S(JJ))/S(KK) + DXO*S(JJ)/S(KK)
+               DY = DYI*(S(KK)-S(JJ))/S(KK) + DYO*S(JJ)/S(KK)
+               DZ = DZI*(S(KK)-S(JJ))/S(KK) + DZO*S(JJ)/S(KK)
+               C(FDIR) = 1
+               C(SDIR) = J
+               C(CDIR) = HOW(K,1)
+               XTMOD(C(1),C(2),C(3)) = XT(C(1),C(2),C(3)) + DX
+               YTMOD(C(1),C(2),C(3)) = YT(C(1),C(2),C(3)) + DY
+               ZTMOD(C(1),C(2),C(3)) = ZT(C(1),C(2),C(3)) + DZ
+            END DO
+         END IF
+         IF (I.EQ.HSIZE(CDIR,1)) THEN
+            DO K=1,HSIZE(FDIR,1) 
+               JJ = TSIZE(FDIR,1)+K-1
+               DX = DXI*(S(KK)-S(JJ))/S(KK) + DXO*S(JJ)/S(KK)
+               DY = DYI*(S(KK)-S(JJ))/S(KK) + DYO*S(JJ)/S(KK)
+               DZ = DZI*(S(KK)-S(JJ))/S(KK) + DZO*S(JJ)/S(KK)
+               C(FDIR) = 1
+               C(SDIR) = J
+               C(CDIR) = HOW(K,2) 
+               XTMOD(C(1),C(2),C(3)) = XT(C(1),C(2),C(3)) + DX
+               YTMOD(C(1),C(2),C(3)) = YT(C(1),C(2),C(3)) + DY
+               ZTMOD(C(1),C(2),C(3)) = ZT(C(1),C(2),C(3)) + DZ
+            END DO
+         END IF
+      END DO
+      END DO
+C
+C     FIX THE FIRST FACE TO MACTCH THE LAST FACE
+C
+      DO J=1,TSIZE(SDIR,1)
+         C(CDIR) = 1
+         C(SDIR) = J
+         C(FDIR) = 1
+         D(CDIR) = TSIZE(CDIR,1)
+         D(SDIR) = J
+         D(FDIR) = 1
+         XTMOD(C(1),C(2),C(3)) = XTMOD(D(1),D(2),D(3))
+         YTMOD(C(1),C(2),C(3)) = YTMOD(D(1),D(2),D(3))
+         ZTMOD(C(1),C(2),C(3)) = ZTMOD(D(1),D(2),D(3))
+      END DO
+C
+C     CORRECT THE INNER LAYERS OF THE O-MESH
+C
+      DEALLOCATE(S,DS)
+      ALLOCATE(S(TSIZE(FDIR,1)))
+      ALLOCATE(DS(TSIZE(FDIR,1)))
+
+      KK = TSIZE(FDIR,1)
+
+      DO I=1,TSIZE(CDIR,1)
+      DO J=1,TSIZE(SDIR,1)
+C        FILL S
+         S(1) = 0.0
+         DS(1) = 0.0
+         DO K=2,TSIZE(FDIR,1)
+            C(CDIR) = I
+            C(SDIR) = J
+            C(FDIR) = K
+            D(CDIR) = I
+            D(SDIR) = J
+            D(FDIR) = K-1
+            DS(K) = SQRT((XT(C(1),C(2),C(3))-XT(D(1),D(2),D(3)))**2 + 
+     .                   (YT(C(1),C(2),C(3))-YT(D(1),D(2),D(3)))**2 +
+     .                   (ZT(C(1),C(2),C(3))-ZT(D(1),D(2),D(3)))**2)
+            S(K) = S(K-1) + DS(K)
+         END DO
+         DO K=2,TSIZE(FDIR,1)
+C           DISPLACEMENT AT S = 0
+            C(CDIR) = I
+            C(SDIR) = J
+            C(FDIR) = 1
+            DXI = XTMOD(C(1),C(2),C(3)) - XT(C(1),C(2),C(3))
+            DYI = YTMOD(C(1),C(2),C(3)) - YT(C(1),C(2),C(3))
+            DZI = ZTMOD(C(1),C(2),C(3)) - ZT(C(1),C(2),C(3))
+C           DISPLACEMENT AT S = 1         
+            C(CDIR) = I
+            C(SDIR) = J
+            C(FDIR) = TSIZE(FDIR,1)
+            DXO = XTMOD(C(1),C(2),C(3)) - XT(C(1),C(2),C(3))
+            DYO = YTMOD(C(1),C(2),C(3)) - YT(C(1),C(2),C(3))
+            DZO = ZTMOD(C(1),C(2),C(3)) - ZT(C(1),C(2),C(3))
+            DX = DXI*(S(KK)-S(K))/S(KK) + DXO*S(K)/S(KK)
+            DY = DYI*(S(KK)-S(K))/S(KK) + DYO*S(K)/S(KK)
+            DZ = DZI*(S(KK)-S(K))/S(KK) + DZO*S(K)/S(KK)
+            C(FDIR) = K
+            C(SDIR) = J
+            C(CDIR) = I
+            XTMOD(C(1),C(2),C(3)) = XT(C(1),C(2),C(3)) + DX
+            YTMOD(C(1),C(2),C(3)) = YT(C(1),C(2),C(3)) + DY
+            ZTMOD(C(1),C(2),C(3)) = ZT(C(1),C(2),C(3)) + DZ
          END DO
       END DO
-      END DO
+      END DO      
 C
 C     PROJECT TIP CLEARANCE O-MESH SHROUD SURFACE 
 C
@@ -573,20 +747,20 @@ C
          C(CDIR) = I
          C(SDIR) = TSIZE(SDIR,1)
          C(FDIR) = J
-         R = SQRT(XTMOD(C(1),C(2),C(3))**2 + YTMOD(C(1),C(2),C(3))**2)
+         R = SQRT(YTMOD(C(1),C(2),C(3))**2 + ZTMOD(C(1),C(2),C(3))**2)
          DO K = 1,TSIZE(CDIR,1)-1
-            IF (ZTMOD(C(1),C(2),C(3)).GE.ZI(K)) THEN
-               RR = RI(K) + (ZTMOD(C(1),C(2),C(3)) - ZI(K))*
-     .                      (RI(K-1) - RI(K)) / (ZI(K-1) - ZI(K))
+            IF (XTMOD(C(1),C(2),C(3)).GE.XI(K)) THEN
+               RR = RI(K) + (XTMOD(C(1),C(2),C(3)) - XI(K))*
+     .                      (RI(K-1) - RI(K)) / (XI(K-1) - XI(K))
                EXIT 
             END IF
          END DO
-         XTMOD(C(1),C(2),C(3)) = XTMOD(C(1),C(2),C(3))*RR/R
          YTMOD(C(1),C(2),C(3)) = YTMOD(C(1),C(2),C(3))*RR/R
+         ZTMOD(C(1),C(2),C(3)) = ZTMOD(C(1),C(2),C(3))*RR/R
       END DO   
       END DO
 C
-C     SHIFT INTERIOR TIP CLEARANCE O-MESH EDGE POINTS
+C     SHIFT N SHROUD INTERIOR TIP CLEARANCE O-MESH POINTS
 C
       DEALLOCATE(S2)
       DEALLOCATE(DS2)
@@ -884,16 +1058,16 @@ C
          C(CDIR) = I
          C(SDIR) = HSIZE(SDIR,1)
          C(FDIR) = J
-         R = SQRT(XHMOD(C(1),C(2),C(3))**2 + YHMOD(C(1),C(2),C(3))**2)
+         R = SQRT(YHMOD(C(1),C(2),C(3))**2 + ZHMOD(C(1),C(2),C(3))**2)
          DO K = 1,OSIZE(CDIR,1)-1
-            IF (ZHMOD(C(1),C(2),C(3)).GE.ZI(K)) THEN
-               RR = RI(K) + (ZHMOD(C(1),C(2),C(3)) - ZI(K))*
-     .                      (RI(K-1) - RI(K)) / (ZI(K-1) - ZI(K))
+            IF (XHMOD(C(1),C(2),C(3)).GE.XI(K)) THEN
+               RR = RI(K) + (XHMOD(C(1),C(2),C(3)) - XI(K))*
+     .                      (RI(K-1) - RI(K)) / (XI(K-1) - XI(K))
                EXIT 
             END IF
          END DO
-         XHMOD(C(1),C(2),C(3)) = XHMOD(C(1),C(2),C(3))*RR/R
          YHMOD(C(1),C(2),C(3)) = YHMOD(C(1),C(2),C(3))*RR/R
+         ZHMOD(C(1),C(2),C(3)) = ZHMOD(C(1),C(2),C(3))*RR/R
       END DO   
       END DO
 C
