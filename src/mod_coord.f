@@ -598,7 +598,7 @@ C        FILL S
             C(FDIR) = K
             D(CDIR) = HOL(I,2)
             D(SDIR) = J
-            D(FDIR) = K-1
+            D(FDIR) = K+1
             JJ = JJ + 1
             DS(JJ) = SQRT((XT(C(1),C(2),C(3))-XT(D(1),D(2),D(3)))**2 + 
      .                    (YT(C(1),C(2),C(3))-YT(D(1),D(2),D(3)))**2 +
@@ -804,15 +804,6 @@ C
          S(K) = S(K-1) + DS(K)
       END DO
       DO J=TSIZE(SDIR,1)-1,TSIZE(SDIR,1)-N+1,-1
-C         C(CDIR) = I
-C         C(SDIR) = J
-C         C(FDIR) = 1
-C         D(CDIR) = I
-C         D(SDIR) = J+1
-C         D(FDIR) = 1
-C         DX = XSH(C(1),C(2),C(3)) - XSH(D(1),D(2),D(3))
-C         DY = YSH(C(1),C(2),C(3)) - YSH(D(1),D(2),D(3))
-C         DZ = ZSH(C(1),C(2),C(3)) - ZSH(D(1),D(2),D(3))
          C(CDIR) = I
          C(SDIR) = TSIZE(SDIR,1)-N
          C(FDIR) = 1

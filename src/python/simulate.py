@@ -12,8 +12,14 @@ def mufun(x):    # expectation function
     f = 0
     return f
 
-def covfun(x):    # covariance function
-    lam, sig = 2.0, sqrt(20e-3)
+# covariance function in chordwise direction
+def covfun(x):
+    lam, sig = 2.0, sqrt(2.0e-4)
+    return (sig**2) * exp(-x**2/(2*lam**2))
+
+# covariance function in spanwise direction
+def covfun2(x):
+    lam, sig = 3.0, sqrt(2.0e-4)
     return (sig**2) * exp(-x**2/(2*lam**2))
 
 def covfun_span(x,s_params):    # covariance function
@@ -45,10 +51,6 @@ def covfun_chord(x1,x2,c_params):    # covariance function
         a2 = sig
         
     return a1 * a2 * exp(-(x1-x2)**2/(2*lam**2))
-
-def covfun2(x):    # covariance function
-    lam, sig = 2.0, sqrt(20e-3)
-    return (sig**2) * exp(-x**2/(2*lam**2))
 
 # stationary covariance
 def cov(x, covF, *params): 
@@ -156,7 +158,7 @@ def randProcessPeriodic(x, y, nx, ny, KX, KY):
         UY[:,i] = u(y)
 
     # REMOVE SEED NUMBER TO MAKE RANDOM
-    random.seed(7) 
+    random.seed()
     Z = random.randn(KX,KY)    # normal distribution vector
     f = zeros((nx,ny))
     for i in arange(KX):
@@ -165,7 +167,21 @@ def randProcessPeriodic(x, y, nx, ny, KX, KY):
 
     f += outer(muX,ones((1,ny)))
     f += outer(muY,ones((1,nx))).T
-    return f
+
+    # plot the eigenvalues to determine where to truncate
+    '''
+    eigs = zeros((nx,ny))
+    for i in arange(nx):
+        for j in arange(ny):
+            eigs[i,j] = SX[i]*SY[j]
+    eigs = reshape(eigs,nx*ny)
+    eigs = flipud(sort(eigs))
+    pylab.semilogy(arange(len(eigs)),eigs,'*')
+    pylab.grid(True)
+    pylab.show()
+    '''
+
+    return f, SX, UX, SY, UY
     
 def randProcessLE(x, y, i_le, nx, ny, KX, KY, c_params, s_params):
     # x direction is chord
@@ -247,4 +263,58 @@ def interp(x, y, f, xc, yc):
             ff[i,j] = f[(xis+xie)/2,(yis+yie)/2]
 
     return ff
- 
+
+def testCov(x,i1,i2,Nsamp):
+    C  = cov(x, covfun)
+    U, S = eigenPairs(C, x[0], x[-1])
+    random.seed() 
+    Z = random.randn(Nsamp,len(S))
+    p_s1 = zeros((Nsamp))
+    p_s2 = zeros((Nsamp))
+    for i in range(Nsamp):
+        p_s1[i] = sum(sqrt(S)*U[i1,:]*Z[i,:])
+        p_s2[i] = sum(sqrt(S)*U[i2,:]*Z[i,:])
+    cov_mc = sum(p_s1*p_s2)/(Nsamp-1)
+
+    cov_ex = covfun(x[i2]-x[i1])
+
+    print 'cov_mc: ', cov_mc
+    print 'cov_ex: ', cov_ex
+
+def testCovPeriodic(x,y,i1,i2,Nsamp):
+    # process is periodic in the x direction
+    nx = len(x)
+    ny = len(y)
+    xl = linspace(0.,x[-1],nx)
+    yl = linspace(0.,y[-1],ny)
+    CX = covPeriodic(xl,covfun)
+    UX, SX = eigenPairs(CX, xl[0], xl[-1])
+    # interpolate from uniform to original grid
+    for i in arange(nx):
+        u = interp1d(xl, UX[:,i])
+        UX[:,i] = u(x)
+    
+    CY  = cov(yl, covfun2)
+    UY, SY = eigenPairs(CY, yl[0], yl[-1])
+    # interpolate from uniform to original grid
+    for i in arange(ny):
+        u = interp1d(yl, UY[:,i])
+        UY[:,i] = u(y)
+
+    random.seed() 
+    Z = random.randn(Nsamp,nx,ny)
+    p_s1 = zeros((Nsamp))
+    p_s2 = zeros((Nsamp))
+    for n in range(Nsamp):
+        for i in arange(nx):
+            for j in arange(ny):
+                p_s1[n] += sqrt(SX[i])*sqrt(SY[j])*Z[n,i,j]*UX[i1[0],i]*UY[i1[1],j]
+                p_s2[n] += sqrt(SX[i])*sqrt(SY[j])*Z[n,i,j]*UX[i2[0],i]*UY[i2[1],j]
+    
+    cov_mc = sum(p_s1*p_s2)/(Nsamp-1)
+
+    # cov_ex = covfun(x[i2]-x[i1])
+
+    print 'cov_mc: ', cov_mc
+    # print 'cov_ex: ', cov_ex
+

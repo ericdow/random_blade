@@ -4,40 +4,20 @@ import pylab
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 
-def perturb(rpath, wpath, pca_path, Z_path, npca):
-
-    # inputs
-    # Z_path : where to write out the sample normal 
-    # npca   : where to truncate the PCA expansion
+def perturb(rpath, wpath, pca_path, Z_meas):
 
     cdim, sdim, x, y, z = read_blade.read_coords(rpath)
 
-    # generate and write out the Z for this mesh
-    random.seed() 
-    Z = random.randn(npca)    # normal distribution vector
-    f = open(Z_path,'w')
-    for i in range(npca):
-        f.write('%e\n' % Z[i])
-    f.close()
-
-    ################################
-    # SCALE PCA MODES BY CHORD RATIO
-    ################################
-    # r5_chord = 0.859 # inches at hub
-    # r37_chord = 2.17 # inches at hub
-    # scale = r37_chord/r5_chord
-    scale = 1.0 
+    npca = len(Z_meas)
 
     # read in PCA modes and singular values 
     lines = file(pca_path+'S.dat').readlines()
     S = array([line.strip().split()[0] for line in lines], float).T
     n_modes = len(S)
-    # add the mean
-    cdim,sdim,fp = read_blade.read_mode(pca_path+'mean.dat')
-    # add the PCA modes
+    fp = zeros((cdim,sdim))
     for i in range(npca):
         cdim,sdim,V = read_blade.read_mode(pca_path+'V'+str(i+1)+'.dat')
-        fp += scale*Z[i]*S[i]*V
+        fp += Z_meas[i]*S[i]*V
      
     np = read_blade.calcNormals(x,y,z)
     
@@ -57,7 +37,7 @@ def perturb(rpath, wpath, pca_path, Z_path, npca):
     f.close()
 
     # write out to tecplot format
-    # write_tecplot.write_blade_surf(xp,yp,zp,fp,'blade.dat')
+    write_tecplot.write_blade_surf(xp,yp,zp,fp,'blade.dat')
 
     # test to see how they look
     '''

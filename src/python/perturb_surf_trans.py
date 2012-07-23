@@ -1,10 +1,11 @@
-import read_blade, simulate, write_tecplot
+import read_blade
+import simulate
 from numpy import *
 import pylab
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 
-def perturb(rpath, wpath, pca_path, Z_path, npca):
+def perturb(rpath, wpath, pca_path, scale, mode):
 
     # inputs
     # Z_path : where to write out the sample normal 
@@ -12,32 +13,12 @@ def perturb(rpath, wpath, pca_path, Z_path, npca):
 
     cdim, sdim, x, y, z = read_blade.read_coords(rpath)
 
-    # generate and write out the Z for this mesh
-    random.seed() 
-    Z = random.randn(npca)    # normal distribution vector
-    f = open(Z_path,'w')
-    for i in range(npca):
-        f.write('%e\n' % Z[i])
-    f.close()
-
-    ################################
-    # SCALE PCA MODES BY CHORD RATIO
-    ################################
-    # r5_chord = 0.859 # inches at hub
-    # r37_chord = 2.17 # inches at hub
-    # scale = r37_chord/r5_chord
-    scale = 1.0 
-
-    # read in PCA modes and singular values 
+    # perturb using only one of the transformed modes
     lines = file(pca_path+'S.dat').readlines()
     S = array([line.strip().split()[0] for line in lines], float).T
-    n_modes = len(S)
-    # add the mean
-    cdim,sdim,fp = read_blade.read_mode(pca_path+'mean.dat')
-    # add the PCA modes
-    for i in range(npca):
-        cdim,sdim,V = read_blade.read_mode(pca_path+'V'+str(i+1)+'.dat')
-        fp += scale*Z[i]*S[i]*V
+    fp = zeros((cdim,sdim))
+    cdim,sdim,V = read_blade.read_mode(pca_path+'V'+str(mode)+'.dat')
+    fp += scale*S[mode-1]*V
      
     np = read_blade.calcNormals(x,y,z)
     
@@ -55,9 +36,6 @@ def perturb(rpath, wpath, pca_path, Z_path, npca):
             f.write('\n')
     
     f.close()
-
-    # write out to tecplot format
-    # write_tecplot.write_blade_surf(xp,yp,zp,fp,'blade.dat')
 
     # test to see how they look
     '''
@@ -83,13 +61,12 @@ def perturb(rpath, wpath, pca_path, Z_path, npca):
     # fig.colorbar(surf)
     '''
 
-    '''
+    ''' 
     fig = pylab.figure()
     ax = Axes3D(fig)
-    surf = ax.plot_surface(xp, yp, zp, rstride=1, cstride=1, cmap = cm.jet)
-    # surf = ax.plot_surface(x, y, z, rstride=1, cstride=1, facecolors=cm.jet(fp),\
-    #                        linewidth=0, antialised=0, shade=False)
-    pylab.axis('Equal')
+    # surf = ax.plot_surface(xp, yp, zp, rstride=1, cstride=1, cmap = cm.jet)
+    surf = ax.plot_surface(x, y, z, rstride=1, cstride=1, facecolors=cm.jet(fp),\
+                           linewidth=0, antialised=0, shade=False)
     pylab.show()
     '''
        

@@ -30,7 +30,7 @@ setbc:	$(OBJS) setbc.o
 
 clean:
 	$(RM) $(EXEC) $(OBJS) random_blade.o mesh_var.mod random_blade setbc.o setbc\
-                          random_blade_stator.o random_blade_stator
+                          random_blad_stator.o random_blade_stator
 
 .SUFFIXES:
 .SUFFIXES: .o .F .c .f .swp
