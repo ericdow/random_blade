@@ -189,327 +189,327 @@ C
          END DO
       END DO
       END DO
-CC
-CC     PROJECT THE ENDS OF THE MESH ONTO THE HUB/SHROUD
-CC
-C      ALLOCATE(RO(HSIZE(CDIR,1)-1))
-C      ALLOCATE(RI(HSIZE(CDIR,1)-1))
-C      ALLOCATE(ZI(HSIZE(CDIR,1)-1))
-C      ALLOCATE(IY(HSIZE(CDIR,1)-1))
-CC
-CC     HUB SURFACE
-CC
-C      DO I = 1,HSIZE(CDIR,1)-1
-C         IY(I) = I
-C         C(CDIR) = I
-C         C(SDIR) = 1
-C         C(FDIR) = HSIZE(FDIR,1)
-C         ZI(I) = Z(C(1),C(2),C(3))
-C         RO(I) = SQRT(X(C(1),C(2),C(3))**2 + Y(C(1),C(2),C(3))**2)
-C      END DO
 C
-C      CALL SSORT(ZI,IY,HSIZE(CDIR,1)-1)
+C     PROJECT THE ENDS OF THE MESH ONTO THE HUB/SHROUD
 C
-C      DO I=1,HSIZE(CDIR,1)-1
-C         RI(I) = RO(IY(I))
-C      END DO
+      ALLOCATE(RO(HSIZE(CDIR,1)-1))
+      ALLOCATE(RI(HSIZE(CDIR,1)-1))
+      ALLOCATE(ZI(HSIZE(CDIR,1)-1))
+      ALLOCATE(IY(HSIZE(CDIR,1)-1))
 C
-C      DO I = LE_IND,TE_IND
-C      DO J = 1,HSIZE(FDIR,1)-1
-C         C(CDIR) = I
-C         C(SDIR) = 1
-C         C(FDIR) = J
-C         R = SQRT(XMOD(C(1),C(2),C(3))**2 + YMOD(C(1),C(2),C(3))**2)
-C         DO K = 1,HSIZE(CDIR,1)-1
-C            IF (ZMOD(C(1),C(2),C(3)).GE.ZI(K)) THEN
-C               RR = RI(K) + (ZMOD(C(1),C(2),C(3)) - ZI(K))*
-C     .                      (RI(K-1) - RI(K)) / (ZI(K-1) - ZI(K))
-C               EXIT 
-C            END IF
-C         END DO
-C         XMOD(C(1),C(2),C(3)) = XMOD(C(1),C(2),C(3))*RR/R
-C         YMOD(C(1),C(2),C(3)) = YMOD(C(1),C(2),C(3))*RR/R
-C      END DO   
-C      END DO
-CC
-CC     SHROUD SURFACE
-CC
-C      DO I = 1,HSIZE(CDIR,1)-1
-C         IY(I) = I
-C         C(CDIR) = I
-C         C(SDIR) = HSIZE(SDIR,1)
-C         C(FDIR) = HSIZE(FDIR,1)
-C         ZI(I) = Z(C(1),C(2),C(3))
-C         RO(I) = SQRT(X(C(1),C(2),C(3))**2 + Y(C(1),C(2),C(3))**2)
-C      END DO
+C     HUB SURFACE
 C
-C      CALL SSORT(ZI,IY,HSIZE(CDIR,1)-1)
+      DO I = 1,HSIZE(CDIR,1)-1
+         IY(I) = I
+         C(CDIR) = I
+         C(SDIR) = 1
+         C(FDIR) = HSIZE(FDIR,1)
+         ZI(I) = Z(C(1),C(2),C(3))
+         RO(I) = SQRT(X(C(1),C(2),C(3))**2 + Y(C(1),C(2),C(3))**2)
+      END DO
+
+      CALL SSORT(ZI,IY,HSIZE(CDIR,1)-1)
+
+      DO I=1,HSIZE(CDIR,1)-1
+         RI(I) = RO(IY(I))
+      END DO
+
+      DO I = LE_IND,TE_IND
+      DO J = 1,HSIZE(FDIR,1)-1
+         C(CDIR) = I
+         C(SDIR) = 1
+         C(FDIR) = J
+         R = SQRT(XMOD(C(1),C(2),C(3))**2 + YMOD(C(1),C(2),C(3))**2)
+         DO K = 1,HSIZE(CDIR,1)-1
+            IF (ZMOD(C(1),C(2),C(3)).GE.ZI(K)) THEN
+               RR = RI(K) + (ZMOD(C(1),C(2),C(3)) - ZI(K))*
+     .                      (RI(K-1) - RI(K)) / (ZI(K-1) - ZI(K))
+               EXIT 
+            END IF
+         END DO
+         XMOD(C(1),C(2),C(3)) = XMOD(C(1),C(2),C(3))*RR/R
+         YMOD(C(1),C(2),C(3)) = YMOD(C(1),C(2),C(3))*RR/R
+      END DO   
+      END DO
 C
-C      DO I=1,HSIZE(CDIR,1)-1
-C         RI(I) = RO(IY(I))
-C      END DO
+C     SHROUD SURFACE
 C
-C      DO I = LE_IND,TE_IND
-C      DO J = 1,HSIZE(FDIR,1)-1
-C         C(CDIR) = I
-C         C(SDIR) = HSIZE(SDIR,1)
-C         C(FDIR) = J
-C         R = SQRT(XMOD(C(1),C(2),C(3))**2 + YMOD(C(1),C(2),C(3))**2)
-C         DO K = 1,HSIZE(CDIR,1)-1
-C            IF (ZMOD(C(1),C(2),C(3)).GE.ZI(K)) THEN
-C               RR = RI(K) + (ZMOD(C(1),C(2),C(3)) - ZI(K))*
-C     .                      (RI(K-1) - RI(K)) / (ZI(K-1) - ZI(K))
-C               EXIT 
-C            END IF
-C         END DO
-C         XMOD(C(1),C(2),C(3)) = XMOD(C(1),C(2),C(3))*RR/R
-C         YMOD(C(1),C(2),C(3)) = YMOD(C(1),C(2),C(3))*RR/R
-C      END DO   
-C      END DO
-CC
-CC     ADJUST THE FIRST N LAYERS OF THE BLADE SURFACE MESH
-CC
-C      N = 15
-C      ALLOCATE(S2(HSIZE(CDIR,1),N))
-C      ALLOCATE(DS2(HSIZE(CDIR,1),N))
-CC
-CC     HUB END
-CC
-C      S2(1:HSIZE(CDIR,1),1:N) = 0.0
-C      DS2(1:HSIZE(CDIR,1),1:N) = 0.0
-C      DO I=1,HSIZE(CDIR,1)
-C      DO J=2,N
-C         C(CDIR) = I
-C         C(SDIR) = J
-C         C(FDIR) = HSIZE(FDIR,1)
-C         D(CDIR) = I
-C         D(SDIR) = J-1
-C         D(FDIR) = HSIZE(FDIR,1)
-C         DS2(I,J) = SQRT((XMOD(C(1),C(2),C(3))-XMOD(D(1),D(2),D(3)))**2+
-C     .                   (YMOD(C(1),C(2),C(3))-YMOD(D(1),D(2),D(3)))**2+
-C     .                   (ZMOD(C(1),C(2),C(3))-ZMOD(D(1),D(2),D(3)))**2)
-C         S2(I,J) = S2(I,J-1) + DS2(I,J)
-C      END DO
-C      END DO
+      DO I = 1,HSIZE(CDIR,1)-1
+         IY(I) = I
+         C(CDIR) = I
+         C(SDIR) = HSIZE(SDIR,1)
+         C(FDIR) = HSIZE(FDIR,1)
+         ZI(I) = Z(C(1),C(2),C(3))
+         RO(I) = SQRT(X(C(1),C(2),C(3))**2 + Y(C(1),C(2),C(3))**2)
+      END DO
+
+      CALL SSORT(ZI,IY,HSIZE(CDIR,1)-1)
+
+      DO I=1,HSIZE(CDIR,1)-1
+         RI(I) = RO(IY(I))
+      END DO
+
+      DO I = LE_IND,TE_IND
+      DO J = 1,HSIZE(FDIR,1)-1
+         C(CDIR) = I
+         C(SDIR) = HSIZE(SDIR,1)
+         C(FDIR) = J
+         R = SQRT(XMOD(C(1),C(2),C(3))**2 + YMOD(C(1),C(2),C(3))**2)
+         DO K = 1,HSIZE(CDIR,1)-1
+            IF (ZMOD(C(1),C(2),C(3)).GE.ZI(K)) THEN
+               RR = RI(K) + (ZMOD(C(1),C(2),C(3)) - ZI(K))*
+     .                      (RI(K-1) - RI(K)) / (ZI(K-1) - ZI(K))
+               EXIT 
+            END IF
+         END DO
+         XMOD(C(1),C(2),C(3)) = XMOD(C(1),C(2),C(3))*RR/R
+         YMOD(C(1),C(2),C(3)) = YMOD(C(1),C(2),C(3))*RR/R
+      END DO   
+      END DO
 C
-C      DO I=LE_IND,TE_IND
-C      C(CDIR) = I
-C      C(SDIR) = 1
-C      C(FDIR) = 1
-C      D(CDIR) = I
-C      D(SDIR) = N
-C      D(FDIR) = 1
-C      R = SQRT((XMOD(C(1),C(2),C(3))-XMOD(D(1),D(2),D(3)))**2+
-C     .         (YMOD(C(1),C(2),C(3))-YMOD(D(1),D(2),D(3)))**2+
-C     .         (ZMOD(C(1),C(2),C(3))-ZMOD(D(1),D(2),D(3)))**2)
-C      DO J=2,N
+C     ADJUST THE FIRST N LAYERS OF THE BLADE SURFACE MESH
+C
+      N = 15
+      ALLOCATE(S2(HSIZE(CDIR,1),N))
+      ALLOCATE(DS2(HSIZE(CDIR,1),N))
+C
+C     HUB END
+C
+      S2(1:HSIZE(CDIR,1),1:N) = 0.0
+      DS2(1:HSIZE(CDIR,1),1:N) = 0.0
+      DO I=1,HSIZE(CDIR,1)
+      DO J=2,N
+         C(CDIR) = I
+         C(SDIR) = J
+         C(FDIR) = HSIZE(FDIR,1)
+         D(CDIR) = I
+         D(SDIR) = J-1
+         D(FDIR) = HSIZE(FDIR,1)
+         DS2(I,J) = SQRT((XMOD(C(1),C(2),C(3))-XMOD(D(1),D(2),D(3)))**2+
+     .                   (YMOD(C(1),C(2),C(3))-YMOD(D(1),D(2),D(3)))**2+
+     .                   (ZMOD(C(1),C(2),C(3))-ZMOD(D(1),D(2),D(3)))**2)
+         S2(I,J) = S2(I,J-1) + DS2(I,J)
+      END DO
+      END DO
+
+      DO I=LE_IND,TE_IND
+      C(CDIR) = I
+      C(SDIR) = 1
+      C(FDIR) = 1
+      D(CDIR) = I
+      D(SDIR) = N
+      D(FDIR) = 1
+      R = SQRT((XMOD(C(1),C(2),C(3))-XMOD(D(1),D(2),D(3)))**2+
+     .         (YMOD(C(1),C(2),C(3))-YMOD(D(1),D(2),D(3)))**2+
+     .         (ZMOD(C(1),C(2),C(3))-ZMOD(D(1),D(2),D(3)))**2)
+      DO J=2,N
+         C(CDIR) = I
+         C(SDIR) = J
+         C(FDIR) = 1
+         D(CDIR) = I
+         D(SDIR) = J-1
+         D(FDIR) = 1
+C        DIRECTION OF PROJECTED MESH         
+         DX = XSH(C(1),C(2),C(3)) - XSH(D(1),D(2),D(3))
+         DY = YSH(C(1),C(2),C(3)) - YSH(D(1),D(2),D(3))
+         DZ = ZSH(C(1),C(2),C(3)) - ZSH(D(1),D(2),D(3))
+         MAG = SQRT(DX*DX + DY*DY + DZ*DZ)
+         DX = DX/MAG
+         DY = DY/MAG
+         DZ = DZ/MAG
+         XMOD(C(1),C(2),C(3)) = XMOD(D(1),D(2),D(3)) + 
+     .                          DS2(I,J)/S2(I,15)*R*DX
+         YMOD(C(1),C(2),C(3)) = YMOD(D(1),D(2),D(3)) + 
+     .                          DS2(I,J)/S2(I,15)*R*DY
+         ZMOD(C(1),C(2),C(3)) = ZMOD(D(1),D(2),D(3)) + 
+     .                          DS2(I,J)/S2(I,15)*R*DZ
+      END DO
+      END DO
+C
+C     SHROUD END
+C
+      DEALLOCATE(S2)
+      DEALLOCATE(DS2)
+      ALLOCATE(S2(HSIZE(CDIR,1),N))
+      ALLOCATE(DS2(HSIZE(CDIR,1),N))
+      S2(1:HSIZE(CDIR,1),1:N) = 0.0
+      DS2(1:HSIZE(CDIR,1),1:N) = 0.0
+
+      S(1) = 0.0
+      DS(1) = 0.0
+      DO I=1,HSIZE(CDIR,1)
+      DO J=HSIZE(SDIR,1)-1,HSIZE(SDIR,1)-N+1,-1
+         C(CDIR) = I
+         C(SDIR) = J
+         C(FDIR) = HSIZE(FDIR,1)
+         D(CDIR) = I
+         D(SDIR) = J+1
+         D(FDIR) = HSIZE(FDIR,1)
+         K = HSIZE(SDIR,1)-J+1
+         DS2(I,K) = SQRT((XMOD(C(1),C(2),C(3))-XMOD(D(1),D(2),D(3)))**2+
+     .                   (YMOD(C(1),C(2),C(3))-YMOD(D(1),D(2),D(3)))**2+
+     .                   (ZMOD(C(1),C(2),C(3))-ZMOD(D(1),D(2),D(3)))**2)
+         S2(I,K) = S2(I,K-1) + DS2(I,K)
+      END DO
+      END DO
+
+      DO I=LE_IND,TE_IND
+      C(CDIR) = I
+      C(SDIR) = HSIZE(SDIR,1)
+      C(FDIR) = 1
+      D(CDIR) = I
+      D(SDIR) = HSIZE(SDIR,1)-N+1
+      D(FDIR) = 1
+      R = SQRT((XMOD(C(1),C(2),C(3))-XMOD(D(1),D(2),D(3)))**2+
+     .         (YMOD(C(1),C(2),C(3))-YMOD(D(1),D(2),D(3)))**2+
+     .         (ZMOD(C(1),C(2),C(3))-ZMOD(D(1),D(2),D(3)))**2)
+      DO J=HSIZE(SDIR,1)-1,HSIZE(SDIR,1)-N+1,-1
 C         C(CDIR) = I
 C         C(SDIR) = J
 C         C(FDIR) = 1
 C         D(CDIR) = I
-C         D(SDIR) = J-1
+C         D(SDIR) = J+1
 C         D(FDIR) = 1
-CC        DIRECTION OF PROJECTED MESH         
 C         DX = XSH(C(1),C(2),C(3)) - XSH(D(1),D(2),D(3))
 C         DY = YSH(C(1),C(2),C(3)) - YSH(D(1),D(2),D(3))
 C         DZ = ZSH(C(1),C(2),C(3)) - ZSH(D(1),D(2),D(3))
-C         MAG = SQRT(DX*DX + DY*DY + DZ*DZ)
-C         DX = DX/MAG
-C         DY = DY/MAG
-C         DZ = DZ/MAG
-C         XMOD(C(1),C(2),C(3)) = XMOD(D(1),D(2),D(3)) + 
-C     .                          DS2(I,J)/S2(I,15)*R*DX
-C         YMOD(C(1),C(2),C(3)) = YMOD(D(1),D(2),D(3)) + 
-C     .                          DS2(I,J)/S2(I,15)*R*DY
-C         ZMOD(C(1),C(2),C(3)) = ZMOD(D(1),D(2),D(3)) + 
-C     .                          DS2(I,J)/S2(I,15)*R*DZ
-C      END DO
-C      END DO
-CC
-CC     SHROUD END
-CC
-C      DEALLOCATE(S2)
-C      DEALLOCATE(DS2)
-C      ALLOCATE(S2(HSIZE(CDIR,1),N))
-C      ALLOCATE(DS2(HSIZE(CDIR,1),N))
-C      S2(1:HSIZE(CDIR,1),1:N) = 0.0
-C      DS2(1:HSIZE(CDIR,1),1:N) = 0.0
+         C(CDIR) = I
+         C(SDIR) = HSIZE(SDIR,1)-N
+         C(FDIR) = 1
+         D(CDIR) = I
+         D(SDIR) = HSIZE(SDIR,1)
+         D(FDIR) = 1
+         DX = XMOD(C(1),C(2),C(3)) - XMOD(D(1),D(2),D(3))
+         DY = YMOD(C(1),C(2),C(3)) - YMOD(D(1),D(2),D(3))
+         DZ = ZMOD(C(1),C(2),C(3)) - ZMOD(D(1),D(2),D(3))
+         MAG = SQRT(DX*DX + DY*DY + DZ*DZ)
+         DX = DX/MAG
+         DY = DY/MAG
+         DZ = DZ/MAG
+         C(CDIR) = I
+         C(SDIR) = J
+         C(FDIR) = 1
+         D(CDIR) = I
+         D(SDIR) = J+1
+         D(FDIR) = 1
+         K = HSIZE(SDIR,1)-J+1
+         XMOD(C(1),C(2),C(3)) = XMOD(D(1),D(2),D(3)) + 
+     .                          DS2(I,K)/S2(I,N)*R*DX
+         YMOD(C(1),C(2),C(3)) = YMOD(D(1),D(2),D(3)) + 
+     .                          DS2(I,K)/S2(I,N)*R*DY
+         ZMOD(C(1),C(2),C(3)) = ZMOD(D(1),D(2),D(3)) + 
+     .                          DS2(I,K)/S2(I,N)*R*DZ
+      END DO
+      END DO
 C
-C      S(1) = 0.0
-C      DS(1) = 0.0
-C      DO I=1,HSIZE(CDIR,1)
-C      DO J=HSIZE(SDIR,1)-1,HSIZE(SDIR,1)-N+1,-1
-C         C(CDIR) = I
-C         C(SDIR) = J
-C         C(FDIR) = HSIZE(FDIR,1)
-C         D(CDIR) = I
-C         D(SDIR) = J+1
-C         D(FDIR) = HSIZE(FDIR,1)
-C         K = HSIZE(SDIR,1)-J+1
-C         DS2(I,K) = SQRT((XMOD(C(1),C(2),C(3))-XMOD(D(1),D(2),D(3)))**2+
-C     .                   (YMOD(C(1),C(2),C(3))-YMOD(D(1),D(2),D(3)))**2+
-C     .                   (ZMOD(C(1),C(2),C(3))-ZMOD(D(1),D(2),D(3)))**2)
-C         S2(I,K) = S2(I,K-1) + DS2(I,K)
-C      END DO
-C      END DO
+C     BILINEAR INTERPOLATION OF H-MESH INTERIOR
 C
-C      DO I=LE_IND,TE_IND
-C      C(CDIR) = I
-C      C(SDIR) = HSIZE(SDIR,1)
-C      C(FDIR) = 1
-C      D(CDIR) = I
-C      D(SDIR) = HSIZE(SDIR,1)-N+1
-C      D(FDIR) = 1
-C      R = SQRT((XMOD(C(1),C(2),C(3))-XMOD(D(1),D(2),D(3)))**2+
-C     .         (YMOD(C(1),C(2),C(3))-YMOD(D(1),D(2),D(3)))**2+
-C     .         (ZMOD(C(1),C(2),C(3))-ZMOD(D(1),D(2),D(3)))**2)
-C      DO J=HSIZE(SDIR,1)-1,HSIZE(SDIR,1)-N+1,-1
-CC         C(CDIR) = I
-CC         C(SDIR) = J
-CC         C(FDIR) = 1
-CC         D(CDIR) = I
-CC         D(SDIR) = J+1
-CC         D(FDIR) = 1
-CC         DX = XSH(C(1),C(2),C(3)) - XSH(D(1),D(2),D(3))
-CC         DY = YSH(C(1),C(2),C(3)) - YSH(D(1),D(2),D(3))
-CC         DZ = ZSH(C(1),C(2),C(3)) - ZSH(D(1),D(2),D(3))
-C         C(CDIR) = I
-C         C(SDIR) = HSIZE(SDIR,1)-N
-C         C(FDIR) = 1
-C         D(CDIR) = I
-C         D(SDIR) = HSIZE(SDIR,1)
-C         D(FDIR) = 1
-C         DX = XMOD(C(1),C(2),C(3)) - XMOD(D(1),D(2),D(3))
-C         DY = YMOD(C(1),C(2),C(3)) - YMOD(D(1),D(2),D(3))
-C         DZ = ZMOD(C(1),C(2),C(3)) - ZMOD(D(1),D(2),D(3))
-C         MAG = SQRT(DX*DX + DY*DY + DZ*DZ)
-C         DX = DX/MAG
-C         DY = DY/MAG
-C         DZ = DZ/MAG
-C         C(CDIR) = I
-C         C(SDIR) = J
-C         C(FDIR) = 1
-C         D(CDIR) = I
-C         D(SDIR) = J+1
-C         D(FDIR) = 1
-C         K = HSIZE(SDIR,1)-J+1
-C         XMOD(C(1),C(2),C(3)) = XMOD(D(1),D(2),D(3)) + 
-C     .                          DS2(I,K)/S2(I,N)*R*DX
-C         YMOD(C(1),C(2),C(3)) = YMOD(D(1),D(2),D(3)) + 
-C     .                          DS2(I,K)/S2(I,N)*R*DY
-C         ZMOD(C(1),C(2),C(3)) = ZMOD(D(1),D(2),D(3)) + 
-C     .                          DS2(I,K)/S2(I,N)*R*DZ
-C      END DO
-C      END DO
-CC
-CC     BILINEAR INTERPOLATION OF H-MESH INTERIOR
-CC
-C      ALLOCATE(SJK(HSIZE(FDIR,1),HSIZE(SDIR,1)))
-C      ALLOCATE(TJK(HSIZE(FDIR,1),HSIZE(SDIR,1)))
-C      DO I = LE_IND,TE_IND
-C         C(FDIR) = 1
-C         C(CDIR) = I
-C         C(SDIR) = HSIZE(SDIR,1)
-C
-C         SJK(1,1:HSIZE(SDIR,1)) = 0.0
-C         TJK(1:HSIZE(FDIR,1),1) = 0.0
-CC        FILL SJK
-C         DO J = 2,HSIZE(FDIR,1)
-C         DO K = 1,HSIZE(SDIR,1)
-C            C(FDIR) = J
-C            C(SDIR) = K
-C            D(CDIR) = I
-C            D(FDIR) = J-1
-C            D(SDIR) = K
-C            SJK(J,K) = SJK(J-1,K) + 
-C     .           SQRT((X(C(1),C(2),C(3))-X(D(1),D(2),D(3)))**2 + 
-C     .                (Y(C(1),C(2),C(3))-Y(D(1),D(2),D(3)))**2 +
-C     .                (Z(C(1),C(2),C(3))-Z(D(1),D(2),D(3)))**2)
-C         END DO
-C         END DO
-CC        FILL TJK
-C         DO J = 1,HSIZE(FDIR,1)
-C         DO K = 2,HSIZE(SDIR,1)
-C            C(FDIR) = J
-C            C(SDIR) = K
-C            D(CDIR) = I
-C            D(FDIR) = J
-C            D(SDIR) = K-1
-C            TJK(J,K) = TJK(J,K-1) + 
-C     .           SQRT((X(C(1),C(2),C(3))-X(D(1),D(2),D(3)))**2 + 
-C     .                (Y(C(1),C(2),C(3))-Y(D(1),D(2),D(3)))**2 +
-C     .                (Z(C(1),C(2),C(3))-Z(D(1),D(2),D(3)))**2)
-C         END DO
-C         END DO
-CC        SHIFT INTERIOR POINTS USING BILINEAR INTERPOLATION
-C         DO J = 2,HSIZE(FDIR,1)-1
-CC           SHIFT VECTOR AT HUB            
-C            C(FDIR) = J
-C            C(CDIR) = I
-C            C(SDIR) = 1
-C            DXH = XMOD(C(1),C(2),C(3)) - X(C(1),C(2),C(3)) 
-C            DYH = YMOD(C(1),C(2),C(3)) - Y(C(1),C(2),C(3)) 
-C            DZH = ZMOD(C(1),C(2),C(3)) - Z(C(1),C(2),C(3))
-CC           SHIFT VECTOR AT SHROUD            
-C            C(SDIR) = HSIZE(SDIR,1)
-C            DXS = XMOD(C(1),C(2),C(3)) - X(C(1),C(2),C(3)) 
-C            DYS = YMOD(C(1),C(2),C(3)) - Y(C(1),C(2),C(3)) 
-C            DZS = ZMOD(C(1),C(2),C(3)) - Z(C(1),C(2),C(3))
-C            DO K = 2,HSIZE(SDIR,1)-1
-CC              SHIFT VECTOR AT BLADE SURFACE
-C               C(FDIR) = 1
-C               C(SDIR) = K
-C               DXB = XMOD(C(1),C(2),C(3)) - X(C(1),C(2),C(3)) 
-C               DYB = YMOD(C(1),C(2),C(3)) - Y(C(1),C(2),C(3)) 
-C               DZB = ZMOD(C(1),C(2),C(3)) - Z(C(1),C(2),C(3))
-CC              MOVE THE INTERIOR POINTS
-C               DENOM = 1.0/SJK(J,K)+1.0/(SJK(HSIZE(FDIR,1),K)-SJK(J,K))
-C     .               + 1.0/TJK(J,K)+1.0/(TJK(J,HSIZE(SDIR,1))-TJK(J,K))
-C               DX = (DXH/TJK(J,K) + DXS/(TJK(J,HSIZE(SDIR,1))-TJK(J,K)) 
-C     .            +  DXB/SJK(J,K))/DENOM
-C               DY = (DYH/TJK(J,K) + DYS/(TJK(J,HSIZE(SDIR,1))-TJK(J,K)) 
-C     .            +  DYB/SJK(J,K))/DENOM
-C               DZ = (DZH/TJK(J,K) + DZS/(TJK(J,HSIZE(SDIR,1))-TJK(J,K)) 
-C     .            +  DZB/SJK(J,K))/DENOM
-C               C(FDIR) = J
-C               C(CDIR) = I
-C               C(SDIR) = K
-C               XMOD(C(1),C(2),C(3)) = X(C(1),C(2),C(3)) + DX
-C               YMOD(C(1),C(2),C(3)) = Y(C(1),C(2),C(3)) + DY
-C               ZMOD(C(1),C(2),C(3)) = Z(C(1),C(2),C(3)) + DZ
-C            END DO
-C         END DO
-C      END DO
+      ALLOCATE(SJK(HSIZE(FDIR,1),HSIZE(SDIR,1)))
+      ALLOCATE(TJK(HSIZE(FDIR,1),HSIZE(SDIR,1)))
+      DO I = LE_IND,TE_IND
+         C(FDIR) = 1
+         C(CDIR) = I
+         C(SDIR) = HSIZE(SDIR,1)
 
-C
-C     TODO (REMOVE THIS) REMOVE FRONT/BACK MESH
-C
-      DO J=1,HSIZE(SDIR,1)
-      DO K=1,HSIZE(FDIR,1)
-      DO I=1,LE_IND-1
-         C(FDIR) = K
-         C(CDIR) = I
-         C(SDIR) = J
-         D(FDIR) = K
-         D(CDIR) = LE_IND
-         D(SDIR) = J
-         XMOD(C(1),C(2),C(3)) = XMOD(D(1),D(2),D(3))
-         YMOD(C(1),C(2),C(3)) = YMOD(D(1),D(2),D(3))
-         ZMOD(C(1),C(2),C(3)) = ZMOD(D(1),D(2),D(3))
+         SJK(1,1:HSIZE(SDIR,1)) = 0.0
+         TJK(1:HSIZE(FDIR,1),1) = 0.0
+C        FILL SJK
+         DO J = 2,HSIZE(FDIR,1)
+         DO K = 1,HSIZE(SDIR,1)
+            C(FDIR) = J
+            C(SDIR) = K
+            D(CDIR) = I
+            D(FDIR) = J-1
+            D(SDIR) = K
+            SJK(J,K) = SJK(J-1,K) + 
+     .           SQRT((X(C(1),C(2),C(3))-X(D(1),D(2),D(3)))**2 + 
+     .                (Y(C(1),C(2),C(3))-Y(D(1),D(2),D(3)))**2 +
+     .                (Z(C(1),C(2),C(3))-Z(D(1),D(2),D(3)))**2)
+         END DO
+         END DO
+C        FILL TJK
+         DO J = 1,HSIZE(FDIR,1)
+         DO K = 2,HSIZE(SDIR,1)
+            C(FDIR) = J
+            C(SDIR) = K
+            D(CDIR) = I
+            D(FDIR) = J
+            D(SDIR) = K-1
+            TJK(J,K) = TJK(J,K-1) + 
+     .           SQRT((X(C(1),C(2),C(3))-X(D(1),D(2),D(3)))**2 + 
+     .                (Y(C(1),C(2),C(3))-Y(D(1),D(2),D(3)))**2 +
+     .                (Z(C(1),C(2),C(3))-Z(D(1),D(2),D(3)))**2)
+         END DO
+         END DO
+C        SHIFT INTERIOR POINTS USING BILINEAR INTERPOLATION
+         DO J = 2,HSIZE(FDIR,1)-1
+C           SHIFT VECTOR AT HUB            
+            C(FDIR) = J
+            C(CDIR) = I
+            C(SDIR) = 1
+            DXH = XMOD(C(1),C(2),C(3)) - X(C(1),C(2),C(3)) 
+            DYH = YMOD(C(1),C(2),C(3)) - Y(C(1),C(2),C(3)) 
+            DZH = ZMOD(C(1),C(2),C(3)) - Z(C(1),C(2),C(3))
+C           SHIFT VECTOR AT SHROUD            
+            C(SDIR) = HSIZE(SDIR,1)
+            DXS = XMOD(C(1),C(2),C(3)) - X(C(1),C(2),C(3)) 
+            DYS = YMOD(C(1),C(2),C(3)) - Y(C(1),C(2),C(3)) 
+            DZS = ZMOD(C(1),C(2),C(3)) - Z(C(1),C(2),C(3))
+            DO K = 2,HSIZE(SDIR,1)-1
+C              SHIFT VECTOR AT BLADE SURFACE
+               C(FDIR) = 1
+               C(SDIR) = K
+               DXB = XMOD(C(1),C(2),C(3)) - X(C(1),C(2),C(3)) 
+               DYB = YMOD(C(1),C(2),C(3)) - Y(C(1),C(2),C(3)) 
+               DZB = ZMOD(C(1),C(2),C(3)) - Z(C(1),C(2),C(3))
+C              MOVE THE INTERIOR POINTS
+               DENOM = 1.0/SJK(J,K)+1.0/(SJK(HSIZE(FDIR,1),K)-SJK(J,K))
+     .               + 1.0/TJK(J,K)+1.0/(TJK(J,HSIZE(SDIR,1))-TJK(J,K))
+               DX = (DXH/TJK(J,K) + DXS/(TJK(J,HSIZE(SDIR,1))-TJK(J,K)) 
+     .            +  DXB/SJK(J,K))/DENOM
+               DY = (DYH/TJK(J,K) + DYS/(TJK(J,HSIZE(SDIR,1))-TJK(J,K)) 
+     .            +  DYB/SJK(J,K))/DENOM
+               DZ = (DZH/TJK(J,K) + DZS/(TJK(J,HSIZE(SDIR,1))-TJK(J,K)) 
+     .            +  DZB/SJK(J,K))/DENOM
+               C(FDIR) = J
+               C(CDIR) = I
+               C(SDIR) = K
+               XMOD(C(1),C(2),C(3)) = X(C(1),C(2),C(3)) + DX
+               YMOD(C(1),C(2),C(3)) = Y(C(1),C(2),C(3)) + DY
+               ZMOD(C(1),C(2),C(3)) = Z(C(1),C(2),C(3)) + DZ
+            END DO
+         END DO
       END DO
-      DO I=TE_IND+1,HSIZE(CDIR,1)
-         C(FDIR) = K
-         C(CDIR) = I
-         C(SDIR) = J
-         D(FDIR) = K
-         D(CDIR) = TE_IND
-         D(SDIR) = J
-         XMOD(C(1),C(2),C(3)) = XMOD(D(1),D(2),D(3))
-         YMOD(C(1),C(2),C(3)) = YMOD(D(1),D(2),D(3))
-         ZMOD(C(1),C(2),C(3)) = ZMOD(D(1),D(2),D(3))
-      END DO
-      END DO
-      END DO
+
+CC
+CC     TODO (REMOVE THIS) REMOVE FRONT/BACK MESH
+CC
+C      DO J=1,HSIZE(SDIR,1)
+C      DO K=1,HSIZE(FDIR,1)
+C      DO I=1,LE_IND-1
+C         C(FDIR) = K
+C         C(CDIR) = I
+C         C(SDIR) = J
+C         D(FDIR) = K
+C         D(CDIR) = LE_IND
+C         D(SDIR) = J
+C         XMOD(C(1),C(2),C(3)) = XMOD(D(1),D(2),D(3))
+C         YMOD(C(1),C(2),C(3)) = YMOD(D(1),D(2),D(3))
+C         ZMOD(C(1),C(2),C(3)) = ZMOD(D(1),D(2),D(3))
+C      END DO
+C      DO I=TE_IND+1,HSIZE(CDIR,1)
+C         C(FDIR) = K
+C         C(CDIR) = I
+C         C(SDIR) = J
+C         D(FDIR) = K
+C         D(CDIR) = TE_IND
+C         D(SDIR) = J
+C         XMOD(C(1),C(2),C(3)) = XMOD(D(1),D(2),D(3))
+C         YMOD(C(1),C(2),C(3)) = YMOD(D(1),D(2),D(3))
+C         ZMOD(C(1),C(2),C(3)) = ZMOD(D(1),D(2),D(3))
+C      END DO
+C      END DO
+C      END DO
       
       RETURN
 C
